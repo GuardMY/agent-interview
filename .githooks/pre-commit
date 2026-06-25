@@ -1,0 +1,31 @@
+#!/bin/bash
+# Prevent API keys and secrets from being committed
+
+# Get list of staged files
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED" ]; then
+    exit 0
+fi
+
+# Check each staged file for suspicious patterns
+for file in $STAGED; do
+    # Skip binary files and deleted files
+    if [ ! -f "$file" ]; then continue; fi
+
+    # Build a single regex pattern: sk-... or sk-ant-...
+    if grep -qP 'sk-[a-zA-Z0-9]{20,}|sk-ant-[a-zA-Z0-9]{20,}|AIza[0-9A-Za-z\-_]{35}|ya29\.[0-9A-Za-z\-_]+' "$file" 2>/dev/null; then
+        echo ""
+        echo "====================================="
+        echo " API KEY DETECTED — commit blocked"
+        echo "====================================="
+        echo " File: $file"
+        echo " Match:"
+        grep -nP 'sk-[a-zA-Z0-9]{20,}|sk-ant-[a-zA-Z0-9]{20,}' "$file" | head -3
+        echo ""
+        echo "Remove the key or use .env (gitignored)"
+        echo "====================================="
+        exit 1
+    fi
+done
+
+exit 0
