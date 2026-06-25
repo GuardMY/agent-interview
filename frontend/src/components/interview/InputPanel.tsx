@@ -75,6 +75,7 @@ export function InputPanel({
           disabled={disabled}
           className="min-h-[44px] flex-1 resize-none"
           rows={1}
+          maxLength={5000}
         />
 
         <Button

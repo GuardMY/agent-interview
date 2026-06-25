@@ -1,6 +1,7 @@
+import re
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class WSMessage(BaseModel):
@@ -14,7 +15,12 @@ class WSMessage(BaseModel):
 
 
 class AnswerPayload(BaseModel):
-    content: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=1, max_length=5000)
+
+    @field_validator("content")
+    @classmethod
+    def sanitize(cls, v: str) -> str:
+        return re.sub(r"<[^>]*>", "", v).strip()
 
 
 class CommandPayload(BaseModel):
