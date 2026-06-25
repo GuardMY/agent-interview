@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { getSessionReport } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import type { SessionReport } from "@/types";
@@ -10,25 +11,22 @@ import { AnswerCard } from "@/components/report/AnswerCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-export default function ReportPage({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = use(params);
+function ReportContent({ sessionId }: { sessionId: string }) {
+  const searchParams = useSearchParams();
+  const adminToken = searchParams.get("token") || "";
   const { t } = useI18n();
   const [report, setReport] = useState<SessionReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getSessionReport(sessionId)
+    getSessionReport(sessionId, adminToken)
       .then(setReport)
       .catch((e) =>
         setError(e instanceof Error ? e.message : "Failed to load")
       )
       .finally(() => setLoading(false));
-  }, [sessionId]);
+  }, [sessionId, adminToken]);
 
   if (loading) {
     return (
@@ -80,5 +78,18 @@ export default function ReportPage({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReportPage({
+  params,
+}: {
+  params: Promise<{ sessionId: string }>;
+}) {
+  const { sessionId } = use(params);
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-gray-400">Loading...</div>}>
+      <ReportContent sessionId={sessionId} />
+    </Suspense>
   );
 }

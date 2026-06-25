@@ -1,13 +1,16 @@
 import json
 import logging
+from urllib.parse import parse_qs
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from sqlalchemy import select
 
 from app.config import settings
 from app.db.database import async_session_factory
 from app.llm.base import BaseLLMAdapter
 from app.core.agent import InterviewAgent
 from app.services.question_bank import QuestionBankService
+from app.models.session import InterviewSession
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +52,20 @@ def _create_llm_adapter() -> BaseLLMAdapter:
 
 @router.websocket("/ws/interview/{session_id}")
 async def ws_interview(websocket: WebSocket, session_id: str) -> None:
-    """WebSocket endpoint for conducting an interview."""
+    """WebSocket endpoint for conducting an interview. Requires candidate token."""
+    # Validate candidate token from query string
+    qs = parse_qs(websocket.scope.get("query_string", b"").decode())
+    token = qs.get("token", [None])[0]
+
+    async with async_session_factory() as check_db:
+        result = await check_db.execute(
+            select(InterviewSession).where(InterviewSession.id == session_id)
+        )
+        session = result.scalar_one_or_none()
+        if not session or token != session.candidate_token:
+            await websocket.close(code=4003, reason="Forbidden")
+            return
+
     await websocket.accept()
     logger.info(f"WebSocket connected for session {session_id}")
 

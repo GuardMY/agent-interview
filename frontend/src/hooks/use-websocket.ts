@@ -18,7 +18,7 @@ function nextId(): string {
 // Use getState() for stable access — avoids store object in dependency arrays
 const getStore = () => useInterviewStore.getState();
 
-export function useWebSocket(sessionId: string) {
+export function useWebSocket(sessionId: string, token: string = "") {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttempts = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,7 +131,10 @@ export function useWebSocket(sessionId: string) {
     const store = getStore();
     store.setConnectionState("connecting");
 
-    const ws = new WebSocket(`${WS_BASE}/ws/interview/${sessionId}`);
+    const wsUrl = token
+      ? `${WS_BASE}/ws/interview/${sessionId}?token=${encodeURIComponent(token)}`
+      : `${WS_BASE}/ws/interview/${sessionId}`;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {

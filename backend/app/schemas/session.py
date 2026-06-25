@@ -43,3 +43,9 @@ class SessionResponse(BaseModel):
     completed_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CreateSessionResponse(SessionResponse):
+    """Returned only on session creation — includes auth tokens."""
+    admin_token: str
+    candidate_token: str

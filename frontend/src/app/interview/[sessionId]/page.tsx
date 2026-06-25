@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useCallback } from "react";
+import { Suspense, use, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useInterviewStore } from "@/stores/interview-store";
 import { useI18n } from "@/i18n";
@@ -8,15 +9,12 @@ import { InterviewHeader } from "@/components/interview/InterviewHeader";
 import { ChatPanel } from "@/components/interview/ChatPanel";
 import { InputPanel } from "@/components/interview/InputPanel";
 
-export default function InterviewPage({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = use(params);
+function InterviewRoom({ sessionId }: { sessionId: string }) {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
   const { t } = useI18n();
   const { sendAnswer, sendChat, sendSkip, sendRepeat, connectionState } =
-    useWebSocket(sessionId);
+    useWebSocket(sessionId, token);
 
   const interviewStatus = useInterviewStore((s) => s.interviewStatus);
   const isWaiting = useInterviewStore((s) => s.isWaitingForResponse);
@@ -65,5 +63,18 @@ export default function InterviewPage({
         </>
       )}
     </div>
+  );
+}
+
+export default function InterviewPage({
+  params,
+}: {
+  params: Promise<{ sessionId: string }>;
+}) {
+  const { sessionId } = use(params);
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-gray-400">Loading...</div>}>
+      <InterviewRoom sessionId={sessionId} />
+    </Suspense>
   );
 }

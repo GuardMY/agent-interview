@@ -1,6 +1,7 @@
 import { API_BASE } from "./constants";
 import type {
   CreateSessionRequest,
+  CreateSessionResponse,
   SessionResponse,
   SessionReport,
 } from "@/types";
@@ -13,15 +14,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   if (hasBody) {
     headers["Content-Type"] = "application/json";
   }
-  // Merge caller headers (allow override)
   if (optHeaders) {
     Object.assign(headers, optHeaders);
   }
 
-  const res = await fetch(`${API_BASE}${url}`, {
-    ...restOpts,
-    headers,
-  });
+  const res = await fetch(`${API_BASE}${url}`, { ...restOpts, headers });
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || `Request failed: ${res.status}`);
@@ -32,27 +29,39 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 export async function createSession(
   data: CreateSessionRequest
-): Promise<SessionResponse> {
-  return request<SessionResponse>("/api/sessions", {
+): Promise<CreateSessionResponse> {
+  return request<CreateSessionResponse>("/api/sessions", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function getSession(
-  sessionId: string
+  sessionId: string,
+  candidateToken: string
 ): Promise<SessionResponse> {
-  return request<SessionResponse>(`/api/sessions/${sessionId}`);
+  return request<SessionResponse>(
+    `/api/sessions/${sessionId}?token=${encodeURIComponent(candidateToken)}`
+  );
 }
 
 export async function getSessionReport(
-  sessionId: string
+  sessionId: string,
+  adminToken: string
 ): Promise<SessionReport> {
-  return request<SessionReport>(`/api/sessions/${sessionId}/report`);
+  return request<SessionReport>(`/api/sessions/${sessionId}/report`, {
+    headers: { "X-Admin-Token": adminToken },
+  });
 }
 
-export async function deleteSession(sessionId: string): Promise<void> {
-  return request<void>(`/api/sessions/${sessionId}`, { method: "DELETE" });
+export async function deleteSession(
+  sessionId: string,
+  adminToken: string
+): Promise<void> {
+  return request<void>(`/api/sessions/${sessionId}`, {
+    method: "DELETE",
+    headers: { "X-Admin-Token": adminToken },
+  });
 }
 
 export async function healthCheck(): Promise<{ status: string; version: string }> {

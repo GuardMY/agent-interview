@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime, timezone
 
@@ -20,6 +21,14 @@ class InterviewSession(Base):
     )
     key_skills: Mapped[dict] = mapped_column(JSON, default=list)
     interview_language: Mapped[str] = mapped_column(String(10), default="en")
+    admin_token: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True,
+        default=lambda: secrets.token_urlsafe(32),
+    )
+    candidate_token: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True,
+        default=lambda: secrets.token_urlsafe(32),
+    )
     status: Mapped[str] = mapped_column(String(20), default="idle")
     current_question_index: Mapped[int] = mapped_column(Integer, default=0)
     total_questions: Mapped[int] = mapped_column(Integer, default=5)

@@ -103,6 +103,11 @@ export interface CreateSessionRequest {
   interview_language: string;
 }
 
+export interface CreateSessionResponse extends SessionResponse {
+  admin_token: string;
+  candidate_token: string;
+}
+
 export interface SessionResponse {
   id: string;
   candidate_name: string;

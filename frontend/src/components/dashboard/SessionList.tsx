@@ -84,7 +84,11 @@ export function SessionList({ sessions, onDelete }: Props) {
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-1">
                   {s.status === "done" && (
-                    <Link href={`/report/${s.id}`}>
+                    <Link
+                      href={`/report/${s.id}?token=${encodeURIComponent(
+                        localStorage.getItem(`admin_${s.id}`) || ""
+                      )}`}
+                    >
                       <Button
                         variant="ghost"
                         size="sm"
@@ -94,7 +98,12 @@ export function SessionList({ sessions, onDelete }: Props) {
                       </Button>
                     </Link>
                   )}
-                  <Link href={`/interview/${s.id}`} target="_blank">
+                  <Link
+                    href={`/interview/${s.id}?token=${encodeURIComponent(
+                      localStorage.getItem(`candidate_${s.id}`) || ""
+                    )}`}
+                    target="_blank"
+                  >
                     <Button
                       variant="ghost"
                       size="sm"

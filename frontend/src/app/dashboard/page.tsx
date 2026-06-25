@@ -26,7 +26,9 @@ export default function DashboardPage() {
     const results: SessionResponse[] = [];
     for (const id of ids) {
       try {
-        const s = await getSession(id);
+        const token = localStorage.getItem(`candidate_${id}`);
+        if (!token) continue;
+        const s = await getSession(id, token);
         results.push(s);
       } catch {
         // Session may have been deleted
@@ -55,12 +57,18 @@ export default function DashboardPage() {
     setError(null);
     try {
       const session = await createSession(data);
+      // Store tokens for later access
+      localStorage.setItem(`admin_${session.id}`, session.admin_token);
+      localStorage.setItem(`candidate_${session.id}`, session.candidate_token);
       const stored = localStorage.getItem("session_ids");
       const ids: string[] = stored ? JSON.parse(stored) : [];
       ids.unshift(session.id);
       localStorage.setItem("session_ids", JSON.stringify(ids));
       setSessions((prev) => [session, ...prev]);
-      window.open(`/interview/${session.id}`, "_blank");
+      window.open(
+        `/interview/${session.id}?token=${encodeURIComponent(session.candidate_token)}`,
+        "_blank"
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create session");
     } finally {
@@ -70,8 +78,12 @@ export default function DashboardPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteSession(id);
+      const adminToken = localStorage.getItem(`admin_${id}`);
+      if (!adminToken) return;
+      await deleteSession(id, adminToken);
       setSessions((prev) => prev.filter((s) => s.id !== id));
+      localStorage.removeItem(`admin_${id}`);
+      localStorage.removeItem(`candidate_${id}`);
       const stored = localStorage.getItem("session_ids");
       if (stored) {
         const ids: string[] = JSON.parse(stored).filter(
