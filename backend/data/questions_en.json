@@ -1,0 +1,184 @@
+{
+  "questions": [
+    {
+      "question_text": "Can you explain what RESTful API is and what its key principles are?",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["HTTP", "stateless", "resources", "GET", "POST", "PUT", "DELETE", "CRUD", "URI"]
+    },
+    {
+      "question_text": "What is the difference between TCP and UDP protocols?",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["connection-oriented", "connectionless", "reliable", "unreliable", "handshake", "latency", "ordering"]
+    },
+    {
+      "question_text": "Explain the concept of Object-Oriented Programming. What are its four main principles?",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction", "class", "object"]
+    },
+    {
+      "question_text": "What is a database index and how does it improve query performance?",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["B-tree", "hash", "search", "lookup", "data structure", "primary key", "clustered", "non-clustered"]
+    },
+    {
+      "question_text": "Can you explain the difference between SQL and NoSQL databases? When would you choose one over the other?",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["relational", "schema", "ACID", "scalability", "document", "key-value", "use case"]
+    },
+    {
+      "question_text": "What is dependency injection and why is it useful in software design?",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["IoC", "inversion of control", "decoupling", "testability", "interface", "constructor injection"]
+    },
+    {
+      "question_text": "Explain microservices architecture. What are its advantages and challenges compared to a monolithic approach?",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["decoupling", "scalability", "deployment", "communication", "service discovery", "fault isolation", "data management"]
+    },
+    {
+      "question_text": "What is the CAP theorem and how does it apply to distributed systems?",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["consistency", "availability", "partition tolerance", "trade-off", "distributed"]
+    },
+    {
+      "question_text": "Explain how garbage collection works in languages like Java or Go. What are common GC algorithms?",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["mark and sweep", "generational", "reference counting", "heap", "stack", "stop-the-world"]
+    },
+    {
+      "question_text": "What is an event-driven architecture? Describe a scenario where it would be more appropriate than request-response.",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["message broker", "async", "event", "pub/sub", "Kafka", "decoupling", "event sourcing"]
+    },
+    {
+      "question_text": "Explain the concept of eventual consistency. How does it differ from strong consistency, and what trade-offs are involved?",
+      "category": "backend",
+      "difficulty": "senior",
+      "expected_keywords": ["distributed", "replication", "conflict resolution", "BASE", "ACID", "vector clocks", "quorum"]
+    },
+    {
+      "question_text": "How would you design a rate limiter for a distributed API? Consider scalability, accuracy, and fault tolerance.",
+      "category": "backend",
+      "difficulty": "senior",
+      "expected_keywords": ["token bucket", "sliding window", "Redis", "distributed", "atomic operations", "leaky bucket", "throttling"]
+    },
+    {
+      "question_text": "What is the difference between React's virtual DOM and real DOM? Why was the virtual DOM introduced?",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["reconciliation", "diffing", "performance", "batch update", "render", "JSX"]
+    },
+    {
+      "question_text": "Explain the CSS box model. How do margin, border, padding, and content relate to each other?",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["box-sizing", "margin", "border", "padding", "content", "width", "height"]
+    },
+    {
+      "question_text": "What is CORS and how does it work? What are common ways to handle CORS issues?",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["cross-origin", "preflight", "headers", "Access-Control", "same-origin policy", "proxy"]
+    },
+    {
+      "question_text": "Explain how JavaScript's event loop works. What is the difference between the call stack, task queue, and microtask queue?",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["event loop", "call stack", "microtask", "macrotask", "Promise", "setTimeout", "async", "single-threaded"]
+    },
+    {
+      "question_text": "What is state management in frontend applications? Compare different approaches like Redux, Zustand, Context API, or Signals.",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["immutable", "action", "reducer", "store", "selectors", "subscription", "re-render"]
+    },
+    {
+      "question_text": "What is Server-Side Rendering (SSR) and how does it differ from Client-Side Rendering (CSR)? When would you choose each?",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["SEO", "hydration", "TTFB", "performance", "Next.js", "initial load", "interactivity"]
+    },
+    {
+      "question_text": "How does React's concurrent rendering work? What problems does it solve?",
+      "category": "frontend",
+      "difficulty": "senior",
+      "expected_keywords": ["fiber", "suspense", "interruptible", "priority", "time slicing", "useTransition", "deferred"]
+    },
+    {
+      "question_text": "Describe how you would implement a real-time collaborative editing feature (like Google Docs). What algorithms and data structures would you use?",
+      "category": "frontend",
+      "difficulty": "senior",
+      "expected_keywords": ["CRDT", "OT", "operational transform", "WebSocket", "conflict resolution", "version vector", "merge"]
+    },
+    {
+      "question_text": "What is the difference between processes and threads? How does this affect application performance?",
+      "category": "general",
+      "difficulty": "junior",
+      "expected_keywords": ["memory", "IPC", "concurrency", "parallelism", "scheduling", "context switch", "shared memory"]
+    },
+    {
+      "question_text": "Explain the SOLID principles and why they matter in software design.",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["single responsibility", "open-closed", "Liskov substitution", "interface segregation", "dependency inversion", "maintainability"]
+    },
+    {
+      "question_text": "What is Git branching strategy? Compare GitFlow, GitHub Flow, and trunk-based development.",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["feature branch", "merge", "release", "main", "develop", "CI/CD", "code review"]
+    },
+    {
+      "question_text": "Describe your experience with automated testing. What types of tests do you write and when?",
+      "category": "general",
+      "difficulty": "junior",
+      "expected_keywords": ["unit test", "integration", "e2e", "pyramid", "TDD", "mock", "coverage"]
+    },
+    {
+      "question_text": "How do you approach debugging a production issue? Walk me through your methodology.",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["logging", "monitoring", "reproduce", "isolate", "root cause", "rollback", "postmortem", "observability"]
+    },
+    {
+      "question_text": "What is containerization and how does Docker work? How is it different from virtualization?",
+      "category": "devops",
+      "difficulty": "junior",
+      "expected_keywords": ["container", "image", "Dockerfile", "layer", "isolation", "kernel", "VM", "hypervisor"]
+    },
+    {
+      "question_text": "Explain CI/CD pipelines. What are the key stages and best practices?",
+      "category": "devops",
+      "difficulty": "mid",
+      "expected_keywords": ["continuous integration", "continuous delivery", "build", "test", "deploy", "automation", "pipeline"]
+    },
+    {
+      "question_text": "How would you monitor and alert on a production system? What metrics matter most?",
+      "category": "devops",
+      "difficulty": "mid",
+      "expected_keywords": ["SLI", "SLO", "SLA", "latency", "error rate", "throughput", "saturation", "dashboard", "Prometheus", "Grafana"]
+    },
+    {
+      "question_text": "What are large language models (LLMs) and how do they work at a high level?",
+      "category": "ai_ml",
+      "difficulty": "junior",
+      "expected_keywords": ["transformer", "attention", "token", "training", "fine-tuning", "embedding", "GPT"]
+    },
+    {
+      "question_text": "What are the differences between supervised, unsupervised, and reinforcement learning?",
+      "category": "ai_ml",
+      "difficulty": "mid",
+      "expected_keywords": ["labeled data", "clustering", "reward", "classification", "regression", "agent", "environment"]
+    }
+  ]
+}

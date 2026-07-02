@@ -5,12 +5,6 @@ import { useI18n } from "@/i18n";
 import type { SessionReport } from "@/types";
 import { Star, Clock, CheckCircle } from "lucide-react";
 
-const levelLabelsMap: Record<string, string> = {
-  junior: "Junior",
-  mid: "Mid-Level",
-  senior: "Senior",
-};
-
 export function ReportHeader({ report }: { report: SessionReport }) {
   const { t } = useI18n();
 
@@ -23,7 +17,7 @@ export function ReportHeader({ report }: { report: SessionReport }) {
   const scoreLabel =
     report.average_score !== null
       ? `${report.average_score.toFixed(1)} / 5`
-      : "N/A";
+      : "—";
 
   const recommendation =
     report.average_score !== null

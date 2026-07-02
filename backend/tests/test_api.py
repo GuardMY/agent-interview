@@ -138,6 +138,55 @@ class TestRESTEndpoints:
         )
         assert delete_resp.status_code == 204
 
+    def test_list_sessions(self, client, monkeypatch) -> None:
+        """GET /api/sessions returns paginated list with stats (master admin)."""
+        monkeypatch.setattr(settings, "master_admin_token", "master-secret")
+
+        # Create a few sessions
+        for name in ["Alice", "Bob", "Carol"]:
+            client.post("/api/sessions", json={
+                "candidate_name": name,
+                "job_title": "Engineer",
+                "experience_level": "mid",
+            })
+
+        resp = client.get(
+            "/api/sessions",
+            headers={"X-Admin-Token": "master-secret"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        assert "stats" in data
+        assert data["total"] >= 3
+        assert "total_count" in data["stats"]
+        assert "status_breakdown" in data["stats"]
+
+    def test_list_sessions_forbidden(self, client) -> None:
+        """GET /api/sessions without master token returns 403."""
+        resp = client.get("/api/sessions")
+        assert resp.status_code == 403
+
+    def test_list_sessions_pagination(self, client, monkeypatch) -> None:
+        """Pagination parameters work correctly."""
+        monkeypatch.setattr(settings, "master_admin_token", "master-secret")
+
+        for i in range(5):
+            client.post("/api/sessions", json={
+                "candidate_name": f"User{i}",
+                "job_title": "Engineer",
+                "experience_level": "junior",
+            })
+
+        resp = client.get(
+            "/api/sessions?page=1&size=2",
+            headers={"X-Admin-Token": "master-secret"},
+        )
+        data = resp.json()
+        assert len(data["items"]) <= 2
+        assert data["page"] == 1
+        assert data["pages"] >= 3
+
     def test_health_check(self, client) -> None:
         response = client.get("/health")
         assert response.status_code == 200

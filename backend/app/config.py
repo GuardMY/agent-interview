@@ -38,12 +38,21 @@ class Settings(BaseSettings):
     default_total_questions: int = 5
     default_time_limit_minutes: int = 30
     answer_timeout_seconds: int = 120
+    timeout_grace_period_seconds: int = 30
     max_skip_count: int = 3
     sliding_window_size: int = 10
 
     # Scoring
     scoring_consecutive_good: int = 2
     scoring_consecutive_poor: int = 2
+
+    # Admin
+    master_admin_token: str = ""
+
+    # Logging (relative to backend/ dir; use ../logs to avoid uvicorn reload loops)
+    log_dir: str = "../logs"
+    log_max_bytes: int = 10 * 1024 * 1024  # 10 MB
+    log_backup_count: int = 5
 
 
 settings = Settings()

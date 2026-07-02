@@ -42,6 +42,7 @@ interface InterviewState {
   setCurrentQuestion: (meta: QuestionMeta) => void;
   setEvaluationFeedback: (feedback: string | null) => void;
   setWaitingForResponse: (waiting: boolean) => void;
+  setQuestionIndex: (idx: number) => void;
   incrementQuestionIndex: () => void;
   reset: () => void;
 }
@@ -91,6 +92,8 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   setEvaluationFeedback: (feedback) => set({ evaluationFeedback: feedback }),
 
   setWaitingForResponse: (waiting) => set({ isWaitingForResponse: waiting }),
+
+  setQuestionIndex: (idx) => set({ questionIndex: idx }),
 
   incrementQuestionIndex: () =>
     set((state) => ({

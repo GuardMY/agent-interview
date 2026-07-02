@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, use, useCallback } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useInterviewStore } from "@/stores/interview-store";
@@ -44,9 +45,15 @@ function InterviewRoom({ sessionId }: { sessionId: string }) {
           <h2 className="mb-2 text-xl font-bold text-gray-900">
             {t.interview.complete}
           </h2>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-6 text-sm text-gray-500">
             {t.interview.completeMessage}
           </p>
+          <Link
+            href={`/interview/${sessionId}/result?token=${encodeURIComponent(token)}`}
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            {t.interview.viewResults}
+          </Link>
         </div>
       )}
 
@@ -72,8 +79,9 @@ export default function InterviewPage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = use(params);
+  const { t } = useI18n();
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center text-gray-400">Loading...</div>}>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-gray-400">{t.interview.loading}</div>}>
       <InterviewRoom sessionId={sessionId} />
     </Suspense>
   );

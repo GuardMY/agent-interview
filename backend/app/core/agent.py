@@ -1,3 +1,5 @@
+import asyncio
+import hashlib
 import json
 import logging
 from datetime import datetime, timezone
@@ -5,6 +7,7 @@ from datetime import datetime, timezone
 from fastapi import WebSocket
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.config import settings
 from app.core.conversation import ConversationManager, IntentType
@@ -46,6 +49,11 @@ class InterviewAgent:
         self._current_question_id: str | None = None
         self._skip_count: int = 0
         self._started_at: datetime | None = None
+        # Timeout mechanism
+        self._timeout_event = asyncio.Event()
+        self._pending_timeout: str | None = None  # "skip" | "wrapup"
+        self._per_question_task: asyncio.Task | None = None
+        self._total_interview_task: asyncio.Task | None = None
 
     # ── Public API ──────────────────────────────────────────────
 
@@ -61,6 +69,7 @@ class InterviewAgent:
         self._started_at = datetime.now(timezone.utc)
         await self._db.commit()
 
+        self._questions.set_seed(self._generate_seed())
         self._questions.set_initial_difficulty(self._session.experience_level)
 
         # Send interview.start
@@ -76,6 +85,9 @@ class InterviewAgent:
         self._conversation.add_message("interviewer", intro_text)
         await self._send_message("interview.chat", {"content": intro_text})
 
+        # Start total interview timeout
+        self._start_total_interview_timer()
+
     async def handle_message(self, raw: dict) -> None:
         """Dispatch an incoming WebSocket message based on current FSM state."""
         state = self._fsm.state
@@ -88,12 +100,23 @@ class InterviewAgent:
             await self._handle_wrapup(raw)
 
     async def on_disconnect(self) -> None:
-        """Handle client disconnect."""
-        if self._fsm.is_active:
-            self._fsm.transition(InterviewEvent.CANDIDATE_DISCONNECT)
-            if self._session:
-                self._session.status = InterviewState.DONE.value
-                await self._db.commit()
+        """Handle client disconnect — persist state and mark PAUSED for later resume."""
+        if not self._fsm.is_active:
+            return
+        if self._fsm.state == InterviewState.PAUSED:
+            return  # Already paused
+
+        self._cancel_per_question_timer()
+
+        # Persist recoverable state to DB
+        self._persist_state()
+
+        # Transition to PAUSED (not DONE — allow reconnect)
+        self._fsm.transition(InterviewEvent.CONNECTION_LOST)
+        if self._session:
+            self._session.status = InterviewState.PAUSED.value
+            await self._db.commit()
+            logger.info(f"Session {self.session_id} paused, state preserved for reconnect")
 
     # ── Phase Handlers ──────────────────────────────────────────
 
@@ -219,7 +242,7 @@ class InterviewAgent:
         self._session.current_question_index = idx + 1
         await self._db.commit()
 
-        # Wrap question in natural language (fallback to raw text on failure)
+        # Wrap question in natural language (text is already in the target language)
         try:
             wrapped = await self._llm.generate(
                 prompt=get_prompt("question_wrap", self._lang,
@@ -245,10 +268,15 @@ class InterviewAgent:
             "total_questions": self._session.total_questions,
         })
 
+        # Start per-question answer timeout
+        self._start_per_question_timer()
+
     async def _evaluate_and_continue(self, answer_text: str) -> None:
         """Evaluate the answer, send results, and move to next question."""
         if not self._current_question_id or not self._session:
             return
+
+        self._cancel_per_question_timer()
 
         stmt = select(Question).where(Question.id == self._current_question_id)
         result = await self._db.execute(stmt)
@@ -275,6 +303,18 @@ class InterviewAgent:
             weaknesses=evaluation.weaknesses,
             matched_keywords=evaluation.matched_keywords,
             missing_points=evaluation.missing_points,
+            dimension_technical_accuracy=(
+                evaluation.dimensions.technical_accuracy if evaluation.dimensions else None
+            ),
+            dimension_depth_of_knowledge=(
+                evaluation.dimensions.depth_of_knowledge if evaluation.dimensions else None
+            ),
+            dimension_communication=(
+                evaluation.dimensions.communication if evaluation.dimensions else None
+            ),
+            dimension_problem_solving=(
+                evaluation.dimensions.problem_solving if evaluation.dimensions else None
+            ),
             llm_evaluation_raw={
                 "score": evaluation.score,
                 "comment": evaluation.comment,
@@ -282,6 +322,10 @@ class InterviewAgent:
                 "weaknesses": evaluation.weaknesses,
                 "matched_keywords": evaluation.matched_keywords,
                 "missing_points": evaluation.missing_points,
+                "dimensions": (
+                    evaluation.dimensions.model_dump()
+                    if evaluation.dimensions else None
+                ),
             },
         )
         self._db.add(answer)
@@ -377,9 +421,21 @@ class InterviewAgent:
 
     async def _finalize_session(self) -> None:
         """Complete the session and send the final report."""
+        self._cancel_per_question_timer()
+        if self._total_interview_task and not self._total_interview_task.done():
+            self._total_interview_task.cancel()
+            self._total_interview_task = None
+
         if self._session:
             self._session.status = InterviewState.DONE.value
             self._session.completed_at = datetime.now(timezone.utc)
+            # Persist conversation transcript
+            transcript = [
+                {"role": m.role, "content": m.content, "timestamp": m.timestamp}
+                for m in self._conversation.get_full_history()
+            ]
+            self._session.metadata_json["transcript"] = transcript
+            flag_modified(self._session, "metadata_json")
             await self._db.commit()
 
         await self._send_message("interview.end", {
@@ -399,6 +455,170 @@ class InterviewAgent:
     @property
     def _lang(self) -> str:
         return self._session.interview_language if self._session else "en"
+
+    def _generate_seed(self) -> str:
+        """Generate a deterministic random seed from the session ID."""
+        return hashlib.sha256(self.session_id.encode()).hexdigest()
+
+    # ── Timeout Management ─────────────────────────────────────
+
+    def _start_per_question_timer(self) -> None:
+        """Start the per-question answer timeout. Fires warning, then force-skip."""
+        self._cancel_per_question_timer()
+
+        async def _timer() -> None:
+            try:
+                await asyncio.sleep(settings.answer_timeout_seconds)
+                # Phase 1: send warning
+                await self._send_message("interview.chat", {
+                    "content": get_prompt("timeout_warning", self._lang),
+                })
+                await asyncio.sleep(settings.timeout_grace_period_seconds)
+                # Phase 2: force skip
+                self._pending_timeout = "skip"
+                self._timeout_event.set()
+            except asyncio.CancelledError:
+                pass
+
+        self._per_question_task = asyncio.create_task(_timer())
+
+    def _cancel_per_question_timer(self) -> None:
+        """Cancel the per-question timeout (called when answer received)."""
+        if self._per_question_task and not self._per_question_task.done():
+            self._per_question_task.cancel()
+            self._per_question_task = None
+        self._pending_timeout = None
+        self._timeout_event.clear()
+
+    def _start_total_interview_timer(self) -> None:
+        """Start the total interview timeout. Forces wrapup when exceeded."""
+        if not self._session:
+            return
+        total_seconds = self._session.total_questions * 180  # 3 min per question
+
+        async def _timer() -> None:
+            try:
+                await asyncio.sleep(total_seconds)
+                self._pending_timeout = "wrapup"
+                self._timeout_event.set()
+            except asyncio.CancelledError:
+                pass
+
+        self._total_interview_task = asyncio.create_task(_timer())
+
+    async def _handle_timeout_skip(self) -> None:
+        """Handle per-question timeout: mark skipped, move to next question."""
+        await self._send_message("interview.chat", {
+            "content": get_prompt("timeout_skip", self._lang),
+        })
+
+        if self._current_question_id:
+            stmt = select(Question).where(Question.id == self._current_question_id)
+            result = await self._db.execute(stmt)
+            question = result.scalar_one_or_none()
+            if question:
+                question.status = "timeout"
+                await self._db.commit()
+
+        self._timeout_event.clear()
+        await self._ask_next_question()
+
+    async def resolve_timeout(self) -> None:
+        """Called from main loop when a timeout event fires."""
+        pending = self._pending_timeout
+        self._pending_timeout = None
+        self._timeout_event.clear()
+
+        if pending == "skip":
+            await self._handle_timeout_skip()
+        elif pending == "wrapup":
+            self._cancel_per_question_timer()
+            await self._start_wrapup()
+
+    # ── Resume / Persistence ────────────────────────────────────
+
+    def _persist_state(self) -> None:
+        """Serialize recoverable interview state to session metadata_json."""
+        if not self._session:
+            return
+
+        conv_data = [
+            {"role": m.role, "content": m.content, "timestamp": m.timestamp}
+            for m in self._conversation.get_full_history()
+        ]
+
+        self._session.metadata_json["paused_state"] = {
+            "previous_state": self._fsm.state.value,
+            "current_question_id": self._current_question_id,
+            "current_question_index": self._session.current_question_index,
+            "skip_count": self._skip_count,
+            "conversation_history": conv_data,
+        }
+        flag_modified(self._session, "metadata_json")
+
+    async def resume(self) -> None:
+        """Restore a paused interview from persisted state."""
+        self._session = await self._get_session()
+        if not self._session:
+            await self._send_error("Session not found")
+            return
+
+        paused = self._session.metadata_json.get("paused_state", {})
+        if not paused:
+            await self._send_error("No saved state to resume from")
+            return
+
+        # Restore conversation history
+        self._conversation = ConversationManager()
+        for msg_data in paused.get("conversation_history", []):
+            self._conversation.add_message(msg_data["role"], msg_data["content"])
+
+        # Restore tracking state
+        self._current_question_id = paused.get("current_question_id")
+        self._skip_count = paused.get("skip_count", 0)
+        self._started_at = datetime.now(timezone.utc)
+
+        # Restore question index
+        restored_idx = paused.get("current_question_index", 0)
+        if self._session:
+            self._session.current_question_index = restored_idx
+
+        # Restore FSM state via direct assignment
+        prev_state_str = paused.get("previous_state", InterviewState.QA_LOOP.value)
+        prev_state = InterviewState(prev_state_str)
+        self._fsm.force_state(prev_state)
+
+        # Update session
+        if self._session:
+            self._session.status = prev_state.value
+            await self._db.commit()
+
+        # Restore question bank seed
+        self._questions.set_seed(self._generate_seed())
+        self._questions.set_initial_difficulty(
+            self._session.experience_level if self._session else "mid"
+        )
+
+        # Send resume notification with full context for frontend restoration
+        conv_history = [
+            {"role": m.role, "content": m.content, "timestamp": m.timestamp}
+            for m in self._conversation.get_full_history()
+        ]
+        await self._send_message("interview.resume", {
+            "session_id": self.session_id,
+            "job_title": self._session.job_title if self._session else "",
+            "previous_state": prev_state_str,
+            "question_index": restored_idx,
+            "total_questions": self._session.total_questions if self._session else 0,
+            "conversation_history": conv_history,
+        })
+
+        # Restart timers if in QA_LOOP
+        if prev_state_str == InterviewState.QA_LOOP.value and self._current_question_id:
+            self._start_per_question_timer()
+
+        self._start_total_interview_timer()
+        logger.info(f"Session {self.session_id} resumed from {prev_state_str}")
 
     def _build_system_prompt(self) -> str:
         if self._session is None:

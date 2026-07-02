@@ -4,6 +4,15 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
+class EvaluationDimensions(BaseModel):
+    """Multi-dimensional scoring breakdown."""
+
+    technical_accuracy: int = Field(..., ge=1, le=5, description="Correctness of technical content")
+    depth_of_knowledge: int = Field(..., ge=1, le=5, description="Depth beyond surface-level")
+    communication: int = Field(..., ge=1, le=5, description="Clarity and structure")
+    problem_solving: int = Field(..., ge=1, le=5, description="Logical approach and edge cases")
+
+
 class EvaluationResult(BaseModel):
     score: int = Field(..., ge=1, le=5)
     comment: str
@@ -11,6 +20,7 @@ class EvaluationResult(BaseModel):
     weaknesses: list[str] = Field(default_factory=list)
     matched_keywords: list[str] = Field(default_factory=list)
     missing_points: list[str] = Field(default_factory=list)
+    dimensions: EvaluationDimensions | None = None
 
 
 class AnswerReport(BaseModel):
@@ -22,6 +32,15 @@ class AnswerReport(BaseModel):
     answer_content: str | None = None
     score: int | None = None
     score_comment: str | None = None
+    dimensions: EvaluationDimensions | None = None
+
+
+class ConversationEntry(BaseModel):
+    """A single message in the interview conversation transcript."""
+
+    role: str
+    content: str
+    timestamp: str
 
 
 class SessionReport(BaseModel):
@@ -36,3 +55,5 @@ class SessionReport(BaseModel):
     answers: list[AnswerReport]
     started_at: datetime
     completed_at: datetime | None = None
+    dimension_averages: dict[str, float] | None = None
+    conversation_transcript: list[ConversationEntry] | None = None

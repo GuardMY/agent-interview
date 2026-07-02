@@ -6,6 +6,7 @@ class InterviewState(str, Enum):
     INTRO = "intro"
     QA_LOOP = "qa_loop"
     WRAPUP = "wrapup"
+    PAUSED = "paused"
     DONE = "done"
 
 
@@ -18,6 +19,8 @@ class InterviewEvent(str, Enum):
     TIME_UP = "time_up"
     WRAPUP_COMPLETE = "wrapup_complete"
     CANDIDATE_DISCONNECT = "candidate_disconnect"
+    CONNECTION_LOST = "connection_lost"
+    RECONNECT = "reconnect"
     ERROR = "error"
 
 
@@ -36,6 +39,7 @@ class InterviewFSM:
 
         (InterviewState.INTRO, InterviewEvent.INTRO_COMPLETE): InterviewState.QA_LOOP,
         (InterviewState.INTRO, InterviewEvent.TIME_UP): InterviewState.QA_LOOP,
+        (InterviewState.INTRO, InterviewEvent.CONNECTION_LOST): InterviewState.PAUSED,
         (InterviewState.INTRO, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
         (InterviewState.INTRO, InterviewEvent.ERROR): InterviewState.DONE,
 
@@ -43,13 +47,19 @@ class InterviewFSM:
         (InterviewState.QA_LOOP, InterviewEvent.SKIP_QUESTION): InterviewState.QA_LOOP,
         (InterviewState.QA_LOOP, InterviewEvent.QUESTION_EXHAUSTED): InterviewState.WRAPUP,
         (InterviewState.QA_LOOP, InterviewEvent.TIME_UP): InterviewState.WRAPUP,
+        (InterviewState.QA_LOOP, InterviewEvent.CONNECTION_LOST): InterviewState.PAUSED,
         (InterviewState.QA_LOOP, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
         (InterviewState.QA_LOOP, InterviewEvent.ERROR): InterviewState.WRAPUP,
 
         (InterviewState.WRAPUP, InterviewEvent.WRAPUP_COMPLETE): InterviewState.DONE,
         (InterviewState.WRAPUP, InterviewEvent.TIME_UP): InterviewState.DONE,
+        (InterviewState.WRAPUP, InterviewEvent.CONNECTION_LOST): InterviewState.PAUSED,
         (InterviewState.WRAPUP, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
         (InterviewState.WRAPUP, InterviewEvent.ERROR): InterviewState.DONE,
+
+        (InterviewState.PAUSED, InterviewEvent.RECONNECT): InterviewState.QA_LOOP,  # placeholder
+        (InterviewState.PAUSED, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
+        (InterviewState.PAUSED, InterviewEvent.ERROR): InterviewState.DONE,
     }
 
     def __init__(self, initial_state: InterviewState = InterviewState.IDLE) -> None:
@@ -63,6 +73,10 @@ class InterviewFSM:
     @property
     def is_active(self) -> bool:
         return self._state not in (InterviewState.DONE,)
+
+    def force_state(self, state: InterviewState) -> None:
+        """Directly set the current state (used during resume)."""
+        self._state = state
 
     def transition(self, event: InterviewEvent) -> InterviewState:
         """Transition to next state based on event. Raises on invalid transition."""

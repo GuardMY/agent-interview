@@ -128,3 +128,20 @@
     @apply font-sans;
   }
 }
+
+/* Print styles for PDF export / browser print */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .bg-card, .bg-background, .bg-muted {
+    background: white !important;
+  }
+  .border {
+    border-color: #e5e7eb !important;
+  }
+}

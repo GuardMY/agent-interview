@@ -7,6 +7,7 @@ export type InterviewStatus =
   | "intro"
   | "qa_loop"
   | "wrapup"
+  | "paused"
   | "done";
 
 export type ConnectionState =
@@ -23,6 +24,7 @@ export type ServerMessageType =
   | "interview.question"
   | "interview.evaluation"
   | "interview.end"
+  | "interview.resume"
   | "error";
 
 export type ClientMessageType =
@@ -121,6 +123,13 @@ export interface SessionResponse {
   completed_at: string | null;
 }
 
+export interface EvaluationDimensions {
+  technical_accuracy: number;
+  depth_of_knowledge: number;
+  communication: number;
+  problem_solving: number;
+}
+
 export interface AnswerReport {
   question_text: string;
   category: string;
@@ -130,6 +139,7 @@ export interface AnswerReport {
   answer_content: string | null;
   score: number | null;
   score_comment: string | null;
+  dimensions?: EvaluationDimensions | null;
 }
 
 export interface SessionReport {
@@ -144,4 +154,81 @@ export interface SessionReport {
   answers: AnswerReport[];
   started_at: string;
   completed_at: string | null;
+  dimension_averages?: Record<string, number> | null;
+  conversation_transcript?: ConversationEntry[] | null;
+}
+
+// ── Dashboard / Session List Types ────────────────────────────
+
+export interface SessionListStats {
+  total_count: number;
+  active_count: number;
+  completed_count: number;
+  avg_score: number | null;
+  status_breakdown: Record<string, number>;
+}
+
+export interface SessionListResponse {
+  items: SessionResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+  stats: SessionListStats;
+}
+
+// ── Question Bank Types ───────────────────────────────────────
+
+export interface QuestionBankEntry {
+  id: string;
+  question_text: string;
+  category: string;
+  difficulty: string;
+  expected_keywords: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateQuestionRequest {
+  question_text: string;
+  category: string;
+  difficulty: string;
+  expected_keywords: string[];
+}
+
+export interface UpdateQuestionRequest {
+  question_text?: string;
+  category?: string;
+  difficulty?: string;
+  expected_keywords?: string[];
+}
+
+export interface QuestionListResponse {
+  items: QuestionBankEntry[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+export interface CategoryListResponse {
+  categories: string[];
+}
+
+export interface ConversationEntry {
+  role: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface InterviewTemplate {
+  id: string;
+  name: string;
+  name_zh: string;
+  job_title: string;
+  experience_level: string;
+  key_skills: string[];
+  total_questions: number;
+  categories: string[];
 }

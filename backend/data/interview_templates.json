@@ -1,0 +1,64 @@
+{
+  "templates": [
+    {
+      "id": "backend_engineer",
+      "name": "Backend Engineer",
+      "name_zh": "后端工程师",
+      "job_title": "Backend Engineer",
+      "experience_level": "mid",
+      "key_skills": ["Python", "REST API", "Database Design", "System Design", "Microservices"],
+      "total_questions": 5,
+      "categories": ["backend", "general"]
+    },
+    {
+      "id": "senior_backend",
+      "name": "Senior Backend Engineer",
+      "name_zh": "高级后端工程师",
+      "job_title": "Senior Backend Engineer",
+      "experience_level": "senior",
+      "key_skills": ["Distributed Systems", "Performance Tuning", "System Architecture", "Database Optimization", "Message Queues"],
+      "total_questions": 7,
+      "categories": ["backend", "general"]
+    },
+    {
+      "id": "frontend_engineer",
+      "name": "Frontend Engineer",
+      "name_zh": "前端工程师",
+      "job_title": "Frontend Engineer",
+      "experience_level": "mid",
+      "key_skills": ["React", "TypeScript", "CSS", "State Management", "Performance Optimization"],
+      "total_questions": 5,
+      "categories": ["frontend", "general"]
+    },
+    {
+      "id": "devops_engineer",
+      "name": "DevOps Engineer",
+      "name_zh": "DevOps 工程师",
+      "job_title": "DevOps Engineer",
+      "experience_level": "mid",
+      "key_skills": ["Docker", "Kubernetes", "CI/CD", "Cloud Services", "Monitoring"],
+      "total_questions": 5,
+      "categories": ["devops", "general"]
+    },
+    {
+      "id": "ai_ml_engineer",
+      "name": "AI/ML Engineer",
+      "name_zh": "AI/ML 工程师",
+      "job_title": "Machine Learning Engineer",
+      "experience_level": "senior",
+      "key_skills": ["Python", "Deep Learning", "Model Deployment", "Data Pipeline", "MLOps"],
+      "total_questions": 6,
+      "categories": ["ai_ml", "general"]
+    },
+    {
+      "id": "junior_developer",
+      "name": "Junior Developer",
+      "name_zh": "初级开发工程师",
+      "job_title": "Junior Software Engineer",
+      "experience_level": "junior",
+      "key_skills": ["Data Structures", "Algorithms", "Basic SQL", "Git", "Testing"],
+      "total_questions": 4,
+      "categories": ["backend", "frontend", "general"]
+    }
+  ]
+}

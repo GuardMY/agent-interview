@@ -49,3 +49,41 @@ class CreateSessionResponse(SessionResponse):
     """Returned only on session creation — includes auth tokens."""
     admin_token: str
     candidate_token: str
+
+
+class SessionListItem(BaseModel):
+    """Session in a list view (no tokens)."""
+
+    id: str
+    candidate_name: str
+    job_title: str
+    experience_level: str
+    interview_language: str
+    status: str
+    current_question_index: int
+    total_questions: int
+    started_at: datetime
+    completed_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SessionListStats(BaseModel):
+    """Aggregate statistics for the session list."""
+
+    total_count: int
+    active_count: int
+    completed_count: int
+    avg_score: float | None = None
+    status_breakdown: dict[str, int] = {}
+
+
+class SessionListResponse(BaseModel):
+    """Paginated session list with aggregate stats."""
+
+    items: list[SessionListItem]
+    total: int
+    page: int
+    size: int
+    pages: int
+    stats: SessionListStats

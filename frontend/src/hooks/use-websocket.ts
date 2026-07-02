@@ -104,12 +104,45 @@ export function useWebSocket(sessionId: string, token: string = "") {
           break;
         }
 
+        case "interview.resume": {
+          const p = payload as unknown as {
+            session_id: string;
+            job_title: string;
+            previous_state: string;
+            question_index: number;
+            total_questions: number;
+            conversation_history: Array<{
+              role: string;
+              content: string;
+              timestamp: string;
+            }>;
+          };
+          store.setSession(sessionId, p.job_title || "", p.total_questions, 30);
+          store.setConnectionState("connected");
+          store.setInterviewStatus(p.previous_state as "intro" | "qa_loop" | "wrapup");
+          store.setQuestionIndex(p.question_index);
+          store.setWaitingForResponse(false);
+
+          // Rebuild chat from conversation history
+          if (p.conversation_history && p.conversation_history.length > 0) {
+            for (const entry of p.conversation_history) {
+              store.addMessage({
+                id: nextId(),
+                role: entry.role as "interviewer" | "candidate" | "system",
+                content: entry.content,
+                timestamp: entry.timestamp,
+              });
+            }
+          }
+          break;
+        }
+
         case "error": {
           const p = payload as { code: string; message: string };
           store.addMessage({
             id: nextId(),
             role: "system",
-            content: `Error: ${p.message}`,
+            content: p.message,
             timestamp: ts,
           });
           store.setWaitingForResponse(false);
@@ -157,7 +190,9 @@ export function useWebSocket(sessionId: string, token: string = "") {
       getStore().setConnectionState("disconnected");
 
       // Don't reconnect if interview is already done
-      if (getStore().interviewStatus === "done") return;
+      const status = getStore().interviewStatus;
+      if (status === "done") return;
+      // For "paused", allow reconnect — server will call resume()
 
       if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
         const delay =

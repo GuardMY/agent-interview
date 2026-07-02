@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +11,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/i18n";
+import { getTemplates } from "@/lib/api";
 import { Plus } from "lucide-react";
+import type { InterviewTemplate } from "@/types";
 
 interface Props {
   onCreate: (data: {
@@ -38,6 +40,17 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
   const [level, setLevel] = useState("mid");
   const [language, setLanguage] = useState("en");
   const [skills, setSkills] = useState("");
+  const [templates, setTemplates] = useState<InterviewTemplate[]>([]);
+
+  useEffect(() => {
+    getTemplates().then(setTemplates).catch(() => {});
+  }, []);
+
+  const applyTemplate = (tpl: InterviewTemplate) => {
+    setJob(tpl.job_title);
+    setLevel(tpl.experience_level);
+    setSkills(tpl.key_skills.join(", "));
+  };
 
   const handleSubmit = () => {
     if (!name.trim() || !job.trim()) return;
@@ -74,8 +87,34 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
           <DialogTitle>{t.session.createTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
+          {/* Template selector */}
+          {templates.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                {t.session.templateLabel}
+              </label>
+              <select
+                onChange={(e) => {
+                  const tpl = templates.find((t) => t.id === e.target.value);
+                  if (tpl) applyTemplate(tpl);
+                }}
+                defaultValue=""
+                className="w-full rounded-md border px-3 py-2 text-sm bg-background"
+              >
+                <option value="" disabled>
+                  {t.session.templatePlaceholder}
+                </option>
+                {templates.map((tpl) => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {tpl.name} ({tpl.experience_level})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium">
               {t.session.candidateName}
             </label>
             <Input
@@ -85,7 +124,7 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium">
               {t.session.jobTitle}
             </label>
             <Input
@@ -95,7 +134,7 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium">
               {t.dashboard.experienceLevel}
             </label>
             <div className="flex gap-2">
@@ -114,7 +153,7 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium">
               {t.dashboard.interviewLanguage}
             </label>
             <div className="flex gap-2">
@@ -136,7 +175,7 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium">
               {t.dashboard.keySkills}
             </label>
             <Input

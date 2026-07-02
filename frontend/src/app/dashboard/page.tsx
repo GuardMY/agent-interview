@@ -5,18 +5,51 @@ import { SessionList } from "@/components/dashboard/SessionList";
 import { SessionCreateDialog } from "@/components/dashboard/SessionCreateDialog";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
-import { createSession, getSession, deleteSession } from "@/lib/api";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { createSession, listSessions, deleteSession, getSession } from "@/lib/api";
+import { useSessionNotifications } from "@/hooks/use-notification";
 import { useI18n } from "@/i18n";
-import type { SessionResponse } from "@/types";
+import type { SessionListStats, SessionResponse } from "@/types";
+
+const MASTER_TOKEN_KEY = "master_admin_token";
+
+function getMasterToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(MASTER_TOKEN_KEY);
+}
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [sessions, setSessions] = useState<SessionResponse[]>([]);
+  const [stats, setStats] = useState<SessionListStats>({
+    total_count: 0,
+    active_count: 0,
+    completed_count: 0,
+    avg_score: null,
+    status_breakdown: {},
+  });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
+    setFetching(true);
+    const masterToken = getMasterToken();
+
+    if (masterToken) {
+      // Use the server-side list API with aggregate stats
+      try {
+        const response = await listSessions(masterToken, { page: 1, size: 100 });
+        setSessions(response.items);
+        setStats(response.stats);
+        setFetching(false);
+        return;
+      } catch {
+        // Fall through to localStorage fallback
+      }
+    }
+
+    // Fallback: localStorage N+1 pattern (no master token configured)
     const stored = localStorage.getItem("session_ids");
     if (!stored) {
       setFetching(false);
@@ -39,12 +72,22 @@ export default function DashboardPage() {
         new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
     );
     setSessions(results);
+    setStats({
+      total_count: results.length,
+      active_count: results.filter(s => s.status !== "done" && s.status !== "idle").length,
+      completed_count: results.filter(s => s.status === "done").length,
+      avg_score: null,
+      status_breakdown: {},
+    });
     setFetching(false);
   }, []);
 
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
+
+  // Polling notifications for completed interviews
+  useSessionNotifications(getMasterToken(), locale);
 
   const handleCreate = async (data: {
     candidate_name: string;
@@ -70,7 +113,7 @@ export default function DashboardPage() {
         "_blank"
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create session");
+      setError(e instanceof Error ? e.message : t.dashboard.failCreate);
     } finally {
       setLoading(false);
     }
@@ -96,10 +139,6 @@ export default function DashboardPage() {
     }
   };
 
-  const activeCount = sessions.filter(
-    (s) => s.status !== "done" && s.status !== "idle"
-  ).length;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-5xl px-4 py-8">
@@ -112,6 +151,7 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500">{t.dashboard.subtitle}</p>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <LanguageSwitcher />
             <SessionCreateDialog onCreate={handleCreate} loading={loading} />
           </div>
@@ -127,9 +167,9 @@ export default function DashboardPage() {
         <div className="mb-6">
           <StatsCards
             stats={{
-              total: sessions.length,
-              active: activeCount,
-              avgScore: null,
+              total: stats.total_count,
+              active: stats.active_count,
+              avgScore: stats.avg_score,
             }}
           />
         </div>

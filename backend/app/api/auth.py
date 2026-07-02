@@ -4,6 +4,7 @@ from fastapi import Depends, Header, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.db.database import get_db
 from app.models.session import InterviewSession
 
@@ -46,3 +47,21 @@ async def verify_candidate_token(
         raise HTTPException(403, "Forbidden")
 
     return session
+
+
+async def verify_master_admin(
+    x_admin_token: str = Header(None),
+) -> bool:
+    """Verify the master admin token (global, not session-scoped).
+
+    Requires settings.master_admin_token to be configured.
+    Returns True if authorized, raises 403 otherwise.
+    """
+    if not settings.master_admin_token:
+        raise HTTPException(
+            status_code=403,
+            detail="Master admin token not configured on server",
+        )
+    if not x_admin_token or x_admin_token != settings.master_admin_token:
+        raise HTTPException(403, "Forbidden")
+    return True

@@ -1,0 +1,184 @@
+{
+  "questions": [
+    {
+      "question_text": "请解释什么是 RESTful API，它的核心原则有哪些？",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["HTTP", "stateless", "resources", "GET", "POST", "PUT", "DELETE", "CRUD", "URI"]
+    },
+    {
+      "question_text": "TCP 和 UDP 协议有什么区别？",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["connection-oriented", "connectionless", "reliable", "unreliable", "handshake", "latency", "ordering"]
+    },
+    {
+      "question_text": "请解释面向对象编程的概念，它的四大基本原则是什么？",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction", "class", "object"]
+    },
+    {
+      "question_text": "什么是数据库索引？它是如何提高查询性能的？",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["B-tree", "hash", "search", "lookup", "data structure", "primary key", "clustered", "non-clustered"]
+    },
+    {
+      "question_text": "请解释 SQL 和 NoSQL 数据库的区别，在什么场景下你会选择其中一种而不是另一种？",
+      "category": "backend",
+      "difficulty": "junior",
+      "expected_keywords": ["relational", "schema", "ACID", "scalability", "document", "key-value", "use case"]
+    },
+    {
+      "question_text": "什么是依赖注入？它在软件设计中有什么用处？",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["IoC", "inversion of control", "decoupling", "testability", "interface", "constructor injection"]
+    },
+    {
+      "question_text": "请解释微服务架构，与单体架构相比，它有哪些优势和挑战？",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["decoupling", "scalability", "deployment", "communication", "service discovery", "fault isolation", "data management"]
+    },
+    {
+      "question_text": "什么是 CAP 定理？它如何应用于分布式系统？",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["consistency", "availability", "partition tolerance", "trade-off", "distributed"]
+    },
+    {
+      "question_text": "请解释 Java 或 Go 等语言中的垃圾回收机制是如何工作的？常见的 GC 算法有哪些？",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["mark and sweep", "generational", "reference counting", "heap", "stack", "stop-the-world"]
+    },
+    {
+      "question_text": "什么是事件驱动架构？请描述一个它比请求-响应模式更适用的场景。",
+      "category": "backend",
+      "difficulty": "mid",
+      "expected_keywords": ["message broker", "async", "event", "pub/sub", "Kafka", "decoupling", "event sourcing"]
+    },
+    {
+      "question_text": "请解释最终一致性的概念。它与强一致性有何不同？涉及哪些权衡？",
+      "category": "backend",
+      "difficulty": "senior",
+      "expected_keywords": ["distributed", "replication", "conflict resolution", "BASE", "ACID", "vector clocks", "quorum"]
+    },
+    {
+      "question_text": "你会如何为分布式 API 设计一个限流器？请考虑可扩展性、准确性和容错性。",
+      "category": "backend",
+      "difficulty": "senior",
+      "expected_keywords": ["token bucket", "sliding window", "Redis", "distributed", "atomic operations", "leaky bucket", "throttling"]
+    },
+    {
+      "question_text": "React 的虚拟 DOM 和真实 DOM 有什么区别？为什么要引入虚拟 DOM？",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["reconciliation", "diffing", "performance", "batch update", "render", "JSX"]
+    },
+    {
+      "question_text": "请解释 CSS 盒模型。margin、border、padding 和 content 之间的关系是怎样的？",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["box-sizing", "margin", "border", "padding", "content", "width", "height"]
+    },
+    {
+      "question_text": "什么是 CORS？它是如何工作的？常见的 CORS 问题处理方式有哪些？",
+      "category": "frontend",
+      "difficulty": "junior",
+      "expected_keywords": ["cross-origin", "preflight", "headers", "Access-Control", "same-origin policy", "proxy"]
+    },
+    {
+      "question_text": "请解释 JavaScript 的事件循环机制。调用栈、任务队列和微任务队列之间有什么区别？",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["event loop", "call stack", "microtask", "macrotask", "Promise", "setTimeout", "async", "single-threaded"]
+    },
+    {
+      "question_text": "什么是前端应用的状态管理？请比较 Redux、Zustand、Context API 或 Signals 等不同方案。",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["immutable", "action", "reducer", "store", "selectors", "subscription", "re-render"]
+    },
+    {
+      "question_text": "什么是服务端渲染（SSR）？它与客户端渲染（CSR）有何不同？分别在什么场景下选用？",
+      "category": "frontend",
+      "difficulty": "mid",
+      "expected_keywords": ["SEO", "hydration", "TTFB", "performance", "Next.js", "initial load", "interactivity"]
+    },
+    {
+      "question_text": "React 的并发渲染是如何工作的？它解决了什么问题？",
+      "category": "frontend",
+      "difficulty": "senior",
+      "expected_keywords": ["fiber", "suspense", "interruptible", "priority", "time slicing", "useTransition", "deferred"]
+    },
+    {
+      "question_text": "请描述你会如何实现一个实时协作编辑功能（类似 Google Docs）。你会使用哪些算法和数据结构？",
+      "category": "frontend",
+      "difficulty": "senior",
+      "expected_keywords": ["CRDT", "OT", "operational transform", "WebSocket", "conflict resolution", "version vector", "merge"]
+    },
+    {
+      "question_text": "进程和线程有什么区别？这对应用程序的性能有何影响？",
+      "category": "general",
+      "difficulty": "junior",
+      "expected_keywords": ["memory", "IPC", "concurrency", "parallelism", "scheduling", "context switch", "shared memory"]
+    },
+    {
+      "question_text": "请解释 SOLID 原则，以及为什么它们在软件设计中很重要。",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["single responsibility", "open-closed", "Liskov substitution", "interface segregation", "dependency inversion", "maintainability"]
+    },
+    {
+      "question_text": "什么是 Git 分支策略？请比较 GitFlow、GitHub Flow 和基于主干的开发（trunk-based development）。",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["feature branch", "merge", "release", "main", "develop", "CI/CD", "code review"]
+    },
+    {
+      "question_text": "请谈谈你在自动化测试方面的经验。你会编写哪些类型的测试？分别在什么时候编写？",
+      "category": "general",
+      "difficulty": "junior",
+      "expected_keywords": ["unit test", "integration", "e2e", "pyramid", "TDD", "mock", "coverage"]
+    },
+    {
+      "question_text": "你是如何排查生产环境问题的？请介绍一下你的排查方法。",
+      "category": "general",
+      "difficulty": "mid",
+      "expected_keywords": ["logging", "monitoring", "reproduce", "isolate", "root cause", "rollback", "postmortem", "observability"]
+    },
+    {
+      "question_text": "什么是容器化？Docker 是如何工作的？它与虚拟化有什么不同？",
+      "category": "devops",
+      "difficulty": "junior",
+      "expected_keywords": ["container", "image", "Dockerfile", "layer", "isolation", "kernel", "VM", "hypervisor"]
+    },
+    {
+      "question_text": "请解释 CI/CD 流水线。关键阶段有哪些？有哪些最佳实践？",
+      "category": "devops",
+      "difficulty": "mid",
+      "expected_keywords": ["continuous integration", "continuous delivery", "build", "test", "deploy", "automation", "pipeline"]
+    },
+    {
+      "question_text": "你会如何监控和告警一个生产系统？哪些指标最重要？",
+      "category": "devops",
+      "difficulty": "mid",
+      "expected_keywords": ["SLI", "SLO", "SLA", "latency", "error rate", "throughput", "saturation", "dashboard", "Prometheus", "Grafana"]
+    },
+    {
+      "question_text": "什么是大语言模型（LLM）？请在高层次上解释它的工作原理。",
+      "category": "ai_ml",
+      "difficulty": "junior",
+      "expected_keywords": ["transformer", "attention", "token", "training", "fine-tuning", "embedding", "GPT"]
+    },
+    {
+      "question_text": "监督学习、无监督学习和强化学习之间有什么区别？",
+      "category": "ai_ml",
+      "difficulty": "mid",
+      "expected_keywords": ["labeled data", "clustering", "reward", "classification", "regression", "agent", "environment"]
+    }
+  ]
+}

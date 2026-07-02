@@ -19,7 +19,7 @@ const LOCALE_KEY = "app_locale";
 const locales: Record<Locale, typeof en> = { en, zh };
 
 function detectLocale(): Locale {
-  if (typeof window === "undefined") return "zh";
+  if (typeof window === "undefined") return "en";  // SSR-safe default
   const stored = localStorage.getItem(LOCALE_KEY) as Locale | null;
   if (stored && (stored === "en" || stored === "zh")) return stored;
   const nav = navigator.language || "";
@@ -37,7 +37,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("zh");
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
     setLocaleState(detectLocale());

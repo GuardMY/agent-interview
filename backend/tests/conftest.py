@@ -54,7 +54,10 @@ class MockLLM(BaseLLMAdapter):
         # Scoring response
         if "evaluate" in prompt.lower() or "scoring" in prompt.lower() or "Evaluate" in prompt:
             return (
-                '{"score": 4, "comment": "Good answer with clear understanding.", '
+                '{"score": 4, '
+                '"dimensions": {"technical_accuracy": 4, "depth_of_knowledge": 3, '
+                '"communication": 5, "problem_solving": 4}, '
+                '"comment": "Good answer with clear understanding.", '
                 '"strengths": ["clear explanation", "covered key points"], '
                 '"weaknesses": ["could add examples"], '
                 '"matched_keywords": ["REST", "HTTP", "stateless"], '

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from urllib.parse import parse_qs
@@ -7,6 +8,7 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.db.database import async_session_factory
+from app.core.fsm import InterviewState
 from app.llm.base import BaseLLMAdapter
 from app.core.agent import InterviewAgent
 from app.services.question_bank import QuestionBankService
@@ -16,15 +18,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["interview"])
 
-# Shared question bank instance (loaded once, reused across sessions)
-_question_bank: QuestionBankService | None = None
+# Per-language question bank cache (loaded once per language, reused across sessions)
+_question_banks: dict[str, QuestionBankService] = {}
 
 
-def _get_question_bank() -> QuestionBankService:
-    global _question_bank
-    if _question_bank is None:
-        _question_bank = QuestionBankService()
-    return _question_bank
+def _get_question_bank(language: str = "en") -> QuestionBankService:
+    global _question_banks
+    if language not in _question_banks:
+        _question_banks[language] = QuestionBankService(language=language)
+    return _question_banks[language]
 
 
 def _create_llm_adapter() -> BaseLLMAdapter:
@@ -70,7 +72,8 @@ async def ws_interview(websocket: WebSocket, session_id: str) -> None:
     logger.info(f"WebSocket connected for session {session_id}")
 
     llm = _create_llm_adapter()
-    question_bank = _get_question_bank()
+    # Load question bank in the session's language (or default to "en")
+    question_bank = _get_question_bank(session.interview_language if session else "en")
 
     async with async_session_factory() as db:
         agent = InterviewAgent(
@@ -82,15 +85,42 @@ async def ws_interview(websocket: WebSocket, session_id: str) -> None:
         )
 
         try:
-            # Start interview (loads session, sends intro)
-            await agent.start()
+            # Detect if this is a reconnection to a paused session
+            if session and session.status == InterviewState.PAUSED.value:
+                await agent.resume()
+            else:
+                await agent.start()
 
-            # Main message loop
+            # Main message loop — race between receive and timeout
             while agent._fsm.is_active:
                 try:
-                    raw = await websocket.receive_text()
+                    # Race: WebSocket receive vs timeout event
+                    receive_task = asyncio.create_task(websocket.receive_text())
+                    timeout_task = asyncio.create_task(agent._timeout_event.wait())
+
+                    done, pending = await asyncio.wait(
+                        [receive_task, timeout_task],
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+
+                    # Cancel the unfinished task
+                    for task in pending:
+                        task.cancel()
+                        try:
+                            await task
+                        except (asyncio.CancelledError, Exception):
+                            pass
+
+                    # If timeout fired first, handle it
+                    if timeout_task in done:
+                        await agent.resolve_timeout()
+                        continue
+
+                    # Otherwise, process the received message
+                    raw = receive_task.result()
                     message = json.loads(raw)
                     await agent.handle_message(message)
+
                 except json.JSONDecodeError:
                     await websocket.send_text(json.dumps({
                         "type": "error",

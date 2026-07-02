@@ -22,6 +22,7 @@
     "tableCandidate": "候选人",
     "tablePosition": "岗位",
     "tableLevel": "级别",
+    "tableLanguage": "语言",
     "tableStatus": "状态",
     "tableScore": "得分",
     "tableActions": "操作",
@@ -31,7 +32,8 @@
     "experienceLevel": "经验级别",
     "keySkills": "技能标签（逗号分隔）",
     "keySkillsPlaceholder": "例如：Python, FastAPI, PostgreSQL",
-    "interviewLanguage": "面试语言"
+    "interviewLanguage": "面试语言",
+    "failCreate": "创建会话失败"
   },
   "session": {
     "createTitle": "创建面试会话",
@@ -43,7 +45,9 @@
     "create": "创建会话",
     "levelJunior": "初级",
     "levelMid": "中级",
-    "levelSenior": "高级"
+    "levelSenior": "高级",
+    "templateLabel": "模板（可选）",
+    "templatePlaceholder": "选择岗位模板..."
   },
   "interview": {
     "title": "技术面试",
@@ -63,7 +67,9 @@
     "opening": "开场",
     "closing": "结束",
     "ready": "就绪",
-    "completed": "已完成"
+    "completed": "已完成",
+    "viewResults": "查看面试结果",
+    "loading": "加载中..."
   },
   "report": {
     "title": "面试报告",
@@ -78,7 +84,32 @@
     "evaluator": "📝 面试官评语：",
     "skipped": "已跳过",
     "generatedBy": "由 AI 面试官生成",
-    "backToDashboard": "返回面板"
+    "backToDashboard": "返回面板",
+    "loadError": "加载失败",
+    "notFound": "报告不存在",
+    "downloadPdf": "下载 PDF",
+    "exporting": "导出中...",
+    "conversationTranscript": "对话记录",
+    "roleInterviewer": "面试官",
+    "roleCandidate": "候选人"
+  },
+  "result": {
+    "title": "面试完成！",
+    "loading": "加载中...",
+    "missingToken": "缺少访问令牌",
+    "loadError": "加载报告失败",
+    "notAvailable": "报告不可用",
+    "overallScore": "总分",
+    "questionsAnswered": "已答题数",
+    "outcome": "结果",
+    "strong": "优秀",
+    "needsImprovement": "需提升",
+    "questionSummary": "题目摘要",
+    "backHome": "返回首页"
+  },
+  "notification": {
+    "completeTitle": "面试完成",
+    "completeBody": "{names} {verb} 完成了面试。"
   },
   "status": {
     "idle": "就绪",

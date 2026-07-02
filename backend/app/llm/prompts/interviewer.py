@@ -32,8 +32,7 @@ PROMPTS: dict[str, dict[str, str]] = {
             'Category: {category}, Difficulty: {difficulty}'
         ),
         "zh": (
-            '请提出下面这道面试题（需要先将英文题目翻译为地道中文后再提问），'
-            '直接输出你要说的话，不要加任何前缀或说明：\n'
+            '请自然地提出下面这道面试题，直接输出你要说的话，不要加任何前缀或说明：\n'
             '题目："{question}"\n'
             '类别：{category}，难度：{difficulty}'
         ),
@@ -91,6 +90,16 @@ PROMPTS: dict[str, dict[str, str]] = {
     "early_end": {
         "en": "I understand. Thank you for your time today. We'll end the interview here.",
         "zh": "好的，感谢你今天的时间，面试到此结束。",
+    },
+
+    # ── Timeout ──────────────────────────────────────────────
+    "timeout_warning": {
+        "en": "Time is almost up for this question. Please provide your answer or let me know if you'd like to skip.",
+        "zh": "这道题的作答时间快到了，请给出你的回答，或者告诉我你想跳过。",
+    },
+    "timeout_skip": {
+        "en": "Time's up for this question. Let's move on to the next one.",
+        "zh": "时间到，让我们进入下一题。",
     },
 }
 

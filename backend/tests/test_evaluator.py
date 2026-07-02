@@ -75,3 +75,58 @@ class TestEvaluationEngine:
         assert hasattr(result, "weaknesses")
         assert hasattr(result, "matched_keywords")
         assert hasattr(result, "missing_points")
+
+    @pytest.mark.asyncio
+    async def test_evaluate_parses_dimensions(
+        self, engine: EvaluationEngine, sample_question: QuestionData
+    ) -> None:
+        """Dimensions should be parsed from the LLM response."""
+        result = await engine.evaluate(sample_question, "REST uses HTTP and is stateless.")
+        assert result.dimensions is not None
+        assert result.dimensions.technical_accuracy == 4
+        assert result.dimensions.depth_of_knowledge == 3
+        assert result.dimensions.communication == 5
+        assert result.dimensions.problem_solving == 4
+
+    @pytest.mark.asyncio
+    async def test_weighted_score_from_dimensions(
+        self, engine: EvaluationEngine, sample_question: QuestionData
+    ) -> None:
+        """The overall score should be the weighted average of dimensions."""
+        result = await engine.evaluate(sample_question, "REST uses HTTP and is stateless.")
+        # Weighted: 4*0.30 + 3*0.20 + 5*0.15 + 4*0.35 = 1.2+0.6+0.75+1.4 = 3.95 → 4
+        assert result.score == 4
+
+    def test_dimension_clamp(self) -> None:
+        """Out-of-range dimension values should be clamped to 1-5."""
+        assert EvaluationEngine._clamp_dim(0) == 1
+        assert EvaluationEngine._clamp_dim(6) == 5
+        assert EvaluationEngine._clamp_dim(None) == 3
+        assert EvaluationEngine._clamp_dim("bad") == 3
+
+    @pytest.mark.asyncio
+    async def test_parse_dimensions_backward_compatible(
+        self, mock_llm
+    ) -> None:
+        """Old-format JSON (no dimensions) should still work."""
+        class LegacyMockLLM:
+            calls = []
+
+            async def generate(self, prompt, system_prompt=None, max_tokens=1000, temperature=0.7):
+                self.calls.append({})
+                return (
+                    '{"score": 4, "comment": "Good.", '
+                    '"strengths": [], "weaknesses": [], '
+                    '"matched_keywords": [], "missing_points": []}'
+                )
+
+        engine = EvaluationEngine(LegacyMockLLM())
+        question = QuestionData(
+            question_text="Test?",
+            category="general",
+            difficulty="junior",
+            expected_keywords=[],
+        )
+        result = await engine.evaluate(question, "answer")
+        assert result.score == 4  # Uses LLM-reported score
+        assert result.dimensions is None  # No dimensions in old format

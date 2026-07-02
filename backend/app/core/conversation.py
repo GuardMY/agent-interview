@@ -52,36 +52,47 @@ class ConversationManager:
 
     def detect_intent(self, message: str) -> IntentType:
         """
-        Fast intent detection using keyword heuristics.
+        Fast intent detection using bilingual keyword heuristics.
         Falls back to LLM-based detection for ambiguous cases.
         """
         msg_lower = message.strip().lower()
 
-        # Disengage signals
-        disengage_keywords = ["end the interview", "stop the interview", "i want to stop", "quit"]
+        # Disengage signals (EN + ZH)
+        disengage_keywords = [
+            "end the interview", "stop the interview", "i want to stop", "quit",
+            "结束面试", "停止面试", "不想继续", "退出", "不面试了",
+        ]
         for kw in disengage_keywords:
             if kw in msg_lower:
                 return IntentType.DISENGAGE
 
-        # Skip signals
-        skip_keywords = ["skip", "next question", "pass", "move on"]
-        if len(msg_lower) < 30:  # Short message, likely a command
+        # Skip signals (EN + ZH)
+        skip_keywords = [
+            "skip", "next question", "pass", "move on",
+            "跳过", "下一题", "下一道", "换一题", "过",
+        ]
+        if len(message.strip()) < 30:  # Short message, likely a command
             for kw in skip_keywords:
                 if kw in msg_lower:
                     return IntentType.SKIP
 
-        # Clarify signals
+        # Clarify signals (EN + ZH)
         clarify_keywords = [
             "can you repeat", "clarify", "rephrase", "don't understand",
             "not sure what you mean", "could you explain", "what do you mean",
+            "重复一遍", "再说一次", "没听清", "听不懂", "不明白",
+            "什么意思", "解释一下", "没理解", "再说一遍",
         ]
         for kw in clarify_keywords:
             if kw in msg_lower:
                 return IntentType.CLARIFY
 
-        # Chat / off-topic signals (very short, non-technical)
-        chat_keywords = ["thank you", "thanks", "hello", "hi", "how are you"]
-        if len(msg_lower) < 20:
+        # Chat / off-topic signals (very short, non-technical) (EN + ZH)
+        chat_keywords = [
+            "thank you", "thanks", "hello", "hi", "how are you",
+            "谢谢", "感谢", "你好", "您好", "嗨",
+        ]
+        if len(message.strip()) < 20:
             for kw in chat_keywords:
                 if kw in msg_lower:
                     return IntentType.CHAT

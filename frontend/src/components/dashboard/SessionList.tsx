@@ -48,7 +48,7 @@ export function SessionList({ sessions, onDelete }: Props) {
             <th className="hidden px-4 py-3 md:table-cell">
               {t.dashboard.tableLevel}
             </th>
-            <th className="hidden px-4 py-3 md:table-cell">Lang</th>
+            <th className="hidden px-4 py-3 md:table-cell">{t.dashboard.tableLanguage}</th>
             <th className="px-4 py-3">{t.dashboard.tableStatus}</th>
             <th className="hidden px-4 py-3 md:table-cell">
               {t.dashboard.tableScore}
@@ -86,7 +86,7 @@ export function SessionList({ sessions, onDelete }: Props) {
                   {s.status === "done" && (
                     <Link
                       href={`/report/${s.id}?token=${encodeURIComponent(
-                        localStorage.getItem(`admin_${s.id}`) || ""
+                        (typeof window !== "undefined" ? localStorage.getItem(`admin_${s.id}`) : null) || ""
                       )}`}
                     >
                       <Button
@@ -100,7 +100,7 @@ export function SessionList({ sessions, onDelete }: Props) {
                   )}
                   <Link
                     href={`/interview/${s.id}?token=${encodeURIComponent(
-                      localStorage.getItem(`candidate_${s.id}`) || ""
+                      (typeof window !== "undefined" ? localStorage.getItem(`candidate_${s.id}`) : null) || ""
                     )}`}
                     target="_blank"
                   >
