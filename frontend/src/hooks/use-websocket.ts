@@ -148,6 +148,93 @@ export function useWebSocket(sessionId: string, token: string = "") {
           store.setWaitingForResponse(false);
           break;
         }
+
+        // ── P2: New message types ──────────────────────────
+
+        case "interview.phase_change": {
+          const p = payload as {
+            from_phase: string;
+            to_phase: string;
+            phase_index: number;
+            total_phases: number;
+            phase_description: string;
+            position_context: string;
+          };
+          store.setInterviewStatus(p.to_phase as "ice_break" | "project_deep_dive" | "technical_assessment" | "behavioral" | "candidate_qa" | "wrapup");
+          store.setCurrentPhaseIndex(p.phase_index);
+          store.setPositionContext(p.position_context);
+          store.setWaitingForResponse(false);
+          break;
+        }
+
+        case "interview.follow_up": {
+          const p = payload as {
+            question_id: string;
+            parent_question_id: string;
+            content: string;
+            category: string;
+            difficulty: string;
+            depth: number;
+            question_number: number;
+            total_questions: number;
+          };
+          store.addMessage({
+            id: nextId(),
+            role: "interviewer",
+            content: p.content,
+            timestamp: ts,
+            meta: {
+              questionId: p.question_id,
+              category: p.category,
+              difficulty: p.difficulty,
+              questionNumber: p.question_number,
+              totalQuestions: p.total_questions,
+              isFollowUp: true,
+              parentQuestionId: p.parent_question_id,
+            },
+          });
+          store.setCurrentQuestion({
+            questionId: p.question_id,
+            questionNumber: p.question_number,
+            totalQuestions: p.total_questions,
+            isFollowUp: true,
+            parentQuestionId: p.parent_question_id,
+          });
+          store.setFollowUpInfo(p.depth, p.parent_question_id);
+          store.setWaitingForResponse(false);
+          break;
+        }
+
+        case "interview.position_context": {
+          const p = payload as {
+            position_title: string;
+            focus_areas: string[];
+            phase_relevance: string;
+          };
+          store.setPositionContext(p.phase_relevance);
+          break;
+        }
+
+        case "interview.strategy_ready": {
+          const p = payload as {
+            strategy_summary: string;
+            phases_count: number;
+            phase_names: string[];
+          };
+          store.setPhases(
+            p.phase_names.map((name, i) => ({
+              name,
+              label: name, // Will be resolved by i18n in the UI
+              description: "",
+              questionCount: 0,
+              maxQuestions: 5,
+              isActive: i === 0,
+              isCompleted: false,
+            }))
+          );
+          store.setTotalPhases(p.phases_count);
+          break;
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

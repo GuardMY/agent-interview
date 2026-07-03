@@ -23,17 +23,14 @@ const ZH_NOTIFICATION: NotificationLocale = {
 
 /**
  * Polls the session list API and triggers browser notifications
- * when new sessions complete. Requires a master admin token.
+ * when new sessions complete.
  */
 export function useSessionNotifications(
-  masterToken: string | null,
   locale: string = "en",
 ) {
   const prevCompletedRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
-    if (!masterToken) return;
-
     const l10n = locale === "zh" ? ZH_NOTIFICATION : EN_NOTIFICATION;
 
     // Request notification permission on first use
@@ -46,7 +43,7 @@ export function useSessionNotifications(
 
     const init = async () => {
       try {
-        const res = await listSessions(masterToken, { size: 100 });
+        const res = await listSessions({ size: 100 });
         if (!cancelled) {
           prevCompletedRef.current = new Set(
             res.items.filter((s) => s.status === "done").map((s) => s.id)
@@ -61,7 +58,7 @@ export function useSessionNotifications(
     // Periodic polling
     const interval = setInterval(async () => {
       try {
-        const res = await listSessions(masterToken, { size: 100 });
+        const res = await listSessions({ size: 100 });
 
         const completed = new Set(
           res.items.filter((s) => s.status === "done").map((s) => s.id)
@@ -109,5 +106,5 @@ export function useSessionNotifications(
       cancelled = true;
       clearInterval(interval);
     };
-  }, [masterToken, locale]);
+  }, [locale]);
 }

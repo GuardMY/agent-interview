@@ -75,6 +75,13 @@ async def ws_interview(websocket: WebSocket, session_id: str) -> None:
     # Load question bank in the session's language (or default to "en")
     question_bank = _get_question_bank(session.interview_language if session else "en")
 
+    # Create dynamic question generator for strategy mode
+    from app.services.question_generator import DynamicQuestionGenerator
+    question_generator = DynamicQuestionGenerator(
+        llm=llm,
+        question_bank=question_bank,
+    )
+
     async with async_session_factory() as db:
         agent = InterviewAgent(
             session_id=session_id,
@@ -82,6 +89,7 @@ async def ws_interview(websocket: WebSocket, session_id: str) -> None:
             db=db,
             llm=llm,
             question_service=question_bank,
+            question_generator=question_generator,
         )
 
         try:

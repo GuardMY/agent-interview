@@ -1,0 +1,267 @@
+{
+  "positions": [
+    {
+      "title": "Junior Software Engineer",
+      "department": "Engineering",
+      "level": "junior",
+      "description": "We are looking for a motivated Junior Software Engineer to join our team. You will work on building and maintaining web applications under the guidance of senior engineers.",
+      "responsibilities": [
+        "Develop and maintain web application features",
+        "Write clean, testable code following team standards",
+        "Participate in code reviews",
+        "Fix bugs and troubleshoot issues",
+        "Document technical solutions"
+      ],
+      "required_skills": [
+        {"skill": "Python", "min_years": 1, "level": "familiar"},
+        {"skill": "JavaScript/TypeScript", "min_years": 1, "level": "familiar"},
+        {"skill": "SQL", "min_years": 0, "level": "familiar"},
+        {"skill": "Git", "min_years": 0, "level": "familiar"}
+      ],
+      "preferred_skills": [
+        {"skill": "React", "level": "familiar"},
+        {"skill": "Docker", "level": "familiar"},
+        {"skill": "REST API Design", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "medium",
+        "ownership": "medium",
+        "leadership": "low"
+      },
+      "domain_knowledge": null,
+      "default_total_questions": 4,
+      "default_duration_minutes": 25,
+      "interview_focus_areas": [
+        "Data Structures",
+        "Algorithms",
+        "Basic SQL",
+        "Git",
+        "Testing",
+        "Learning Attitude"
+      ]
+    },
+    {
+      "title": "Backend Engineer",
+      "department": "Engineering",
+      "level": "mid",
+      "description": "We are seeking a Backend Engineer to design and implement scalable API services. You will own critical backend components and collaborate with frontend and DevOps teams.",
+      "responsibilities": [
+        "Design and implement RESTful APIs and microservices",
+        "Optimize database queries and application performance",
+        "Write comprehensive tests (unit, integration, e2e)",
+        "Participate in system design discussions",
+        "Mentor junior developers",
+        "Troubleshoot production issues"
+      ],
+      "required_skills": [
+        {"skill": "Python", "min_years": 3, "level": "proficient"},
+        {"skill": "REST API Design", "min_years": 2, "level": "proficient"},
+        {"skill": "Database Design", "min_years": 2, "level": "proficient"},
+        {"skill": "SQL", "min_years": 2, "level": "proficient"},
+        {"skill": "Git", "min_years": 2, "level": "proficient"}
+      ],
+      "preferred_skills": [
+        {"skill": "Microservices", "level": "familiar"},
+        {"skill": "System Design", "level": "familiar"},
+        {"skill": "Docker", "level": "familiar"},
+        {"skill": "Message Queues (Kafka/RabbitMQ)", "level": "familiar"},
+        {"skill": "NoSQL Databases", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "high",
+        "ownership": "high",
+        "leadership": "medium"
+      },
+      "domain_knowledge": null,
+      "default_total_questions": 5,
+      "default_duration_minutes": 30,
+      "interview_focus_areas": [
+        "System Design",
+        "API Design",
+        "Database Optimization",
+        "Code Quality",
+        "Problem Solving"
+      ]
+    },
+    {
+      "title": "Senior Backend Engineer",
+      "department": "Engineering",
+      "level": "senior",
+      "description": "We are looking for a Senior Backend Engineer to lead the architecture and development of distributed systems. You will drive technical decisions and mentor the engineering team.",
+      "responsibilities": [
+        "Architect and lead development of distributed systems",
+        "Drive technical decisions and establish best practices",
+        "Optimize system performance and reliability at scale",
+        "Lead cross-team technical initiatives",
+        "Mentor mid-level and junior engineers",
+        "Conduct system design reviews",
+        "Evaluate and introduce new technologies"
+      ],
+      "required_skills": [
+        {"skill": "Distributed Systems", "min_years": 5, "level": "expert"},
+        {"skill": "System Architecture", "min_years": 5, "level": "expert"},
+        {"skill": "Python", "min_years": 5, "level": "expert"},
+        {"skill": "Performance Tuning", "min_years": 3, "level": "proficient"},
+        {"skill": "Database Optimization", "min_years": 3, "level": "proficient"}
+      ],
+      "preferred_skills": [
+        {"skill": "Message Queues (Kafka/RabbitMQ)", "level": "proficient"},
+        {"skill": "Kubernetes", "level": "familiar"},
+        {"skill": "Cloud Services (AWS/GCP/Azure)", "level": "proficient"},
+        {"skill": "Event-Driven Architecture", "level": "familiar"},
+        {"skill": "Multi-tenancy Systems", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "high",
+        "ownership": "high",
+        "leadership": "high"
+      },
+      "domain_knowledge": ["High-concurrency systems", "Data-intensive applications"],
+      "default_total_questions": 7,
+      "default_duration_minutes": 45,
+      "interview_focus_areas": [
+        "Distributed Systems",
+        "System Architecture",
+        "Performance Tuning",
+        "Database Optimization",
+        "Leadership",
+        "Technical Decision Making"
+      ]
+    },
+    {
+      "title": "Frontend Engineer",
+      "department": "Engineering",
+      "level": "mid",
+      "description": "We are seeking a Frontend Engineer to build intuitive, responsive user interfaces. You will work closely with designers and backend engineers to deliver great user experiences.",
+      "responsibilities": [
+        "Build responsive and accessible web applications",
+        "Collaborate with designers on UI/UX implementation",
+        "Optimize frontend performance and bundle size",
+        "Write unit and integration tests for UI components",
+        "Maintain and improve component libraries",
+        "Participate in code reviews"
+      ],
+      "required_skills": [
+        {"skill": "React", "min_years": 2, "level": "proficient"},
+        {"skill": "TypeScript", "min_years": 2, "level": "proficient"},
+        {"skill": "CSS", "min_years": 2, "level": "proficient"},
+        {"skill": "State Management", "min_years": 1, "level": "familiar"},
+        {"skill": "Git", "min_years": 2, "level": "proficient"}
+      ],
+      "preferred_skills": [
+        {"skill": "Next.js", "level": "familiar"},
+        {"skill": "Performance Optimization", "level": "familiar"},
+        {"skill": "Testing (Jest/Vitest)", "level": "familiar"},
+        {"skill": "Web Accessibility (a11y)", "level": "familiar"},
+        {"skill": "GraphQL", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "high",
+        "ownership": "high",
+        "leadership": "medium"
+      },
+      "domain_knowledge": null,
+      "default_total_questions": 5,
+      "default_duration_minutes": 30,
+      "interview_focus_areas": [
+        "React",
+        "TypeScript",
+        "CSS",
+        "State Management",
+        "Performance Optimization"
+      ]
+    },
+    {
+      "title": "DevOps Engineer",
+      "department": "Platform",
+      "level": "mid",
+      "description": "We are seeking a DevOps Engineer to build and maintain our cloud infrastructure and CI/CD pipelines. You will enable engineering teams to ship reliably and efficiently.",
+      "responsibilities": [
+        "Design and maintain CI/CD pipelines",
+        "Manage cloud infrastructure (AWS/GCP)",
+        "Implement monitoring, alerting, and logging solutions",
+        "Automate infrastructure provisioning (IaC)",
+        "Ensure security and compliance of infrastructure",
+        "Support engineering teams with deployment and troubleshooting"
+      ],
+      "required_skills": [
+        {"skill": "Docker", "min_years": 2, "level": "proficient"},
+        {"skill": "Kubernetes", "min_years": 1, "level": "familiar"},
+        {"skill": "CI/CD", "min_years": 2, "level": "proficient"},
+        {"skill": "Cloud Services", "min_years": 2, "level": "proficient"},
+        {"skill": "Linux/Shell Scripting", "min_years": 2, "level": "proficient"}
+      ],
+      "preferred_skills": [
+        {"skill": "Terraform/Pulumi", "level": "familiar"},
+        {"skill": "Prometheus/Grafana", "level": "familiar"},
+        {"skill": "Python/Go", "level": "familiar"},
+        {"skill": "Service Mesh (Istio)", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "high",
+        "ownership": "high",
+        "leadership": "medium"
+      },
+      "domain_knowledge": null,
+      "default_total_questions": 5,
+      "default_duration_minutes": 30,
+      "interview_focus_areas": [
+        "Docker",
+        "Kubernetes",
+        "CI/CD",
+        "Cloud Services",
+        "Monitoring",
+        "Automation"
+      ]
+    },
+    {
+      "title": "AI/ML Engineer",
+      "department": "Data & AI",
+      "level": "senior",
+      "description": "We are looking for an AI/ML Engineer to develop and deploy machine learning models at scale. You will own the ML pipeline from data preparation to production deployment.",
+      "responsibilities": [
+        "Design and implement ML models for production",
+        "Build and maintain data pipelines for model training",
+        "Deploy and monitor models in production",
+        "Optimize model inference performance",
+        "Collaborate with data scientists and backend engineers",
+        "Establish MLOps best practices"
+      ],
+      "required_skills": [
+        {"skill": "Python", "min_years": 5, "level": "expert"},
+        {"skill": "Deep Learning", "min_years": 3, "level": "proficient"},
+        {"skill": "Model Deployment", "min_years": 2, "level": "proficient"},
+        {"skill": "Data Pipeline", "min_years": 3, "level": "proficient"},
+        {"skill": "MLOps", "min_years": 2, "level": "familiar"}
+      ],
+      "preferred_skills": [
+        {"skill": "PyTorch/TensorFlow", "level": "proficient"},
+        {"skill": "Kubernetes", "level": "familiar"},
+        {"skill": "Feature Store", "level": "familiar"},
+        {"skill": "A/B Testing", "level": "familiar"},
+        {"skill": "LLM Fine-tuning", "level": "familiar"}
+      ],
+      "soft_skill_requirements": {
+        "teamwork": "high",
+        "communication": "high",
+        "ownership": "high",
+        "leadership": "medium"
+      },
+      "domain_knowledge": ["Machine Learning", "Data Engineering"],
+      "default_total_questions": 6,
+      "default_duration_minutes": 40,
+      "interview_focus_areas": [
+        "Deep Learning",
+        "Model Deployment",
+        "Data Pipeline",
+        "MLOps",
+        "Python"
+      ]
+    }
+  ]
+}

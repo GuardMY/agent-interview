@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import api_router
 from app.config import settings
 from app.db.database import async_session_factory, init_db
-from app.db.seed import seed_question_bank
+from app.db.seed import seed_job_positions, seed_question_bank
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,9 +39,10 @@ async def lifespan(app: FastAPI):
     logger.info("Starting AI Interview Agent server...")
     await init_db()
 
-    # Seed question bank from JSON (idempotent)
+    # Seed question bank and job positions from JSON (idempotent)
     async with async_session_factory() as seed_db:
         await seed_question_bank(seed_db)
+        await seed_job_positions(seed_db)
 
     logger.info("Database initialized.")
     yield

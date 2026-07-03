@@ -8,7 +8,14 @@ export type InterviewStatus =
   | "qa_loop"
   | "wrapup"
   | "paused"
-  | "done";
+  | "done"
+  // P2: Multi-phase strategy states
+  | "strategy_gen"
+  | "ice_break"
+  | "project_deep_dive"
+  | "technical_assessment"
+  | "behavioral"
+  | "candidate_qa";
 
 export type ConnectionState =
   | "connecting"
@@ -25,7 +32,12 @@ export type ServerMessageType =
   | "interview.evaluation"
   | "interview.end"
   | "interview.resume"
-  | "error";
+  | "error"
+  // P2: New message types
+  | "interview.phase_change"
+  | "interview.follow_up"
+  | "interview.position_context"
+  | "interview.strategy_ready";
 
 export type ClientMessageType =
   | "message.chat"
@@ -49,6 +61,10 @@ export interface QuestionMeta {
   difficulty?: string;
   questionNumber?: number;
   totalQuestions?: number;
+  // P2: Phase-aware metadata
+  phase?: string;
+  isFollowUp?: boolean;
+  parentQuestionId?: string;
 }
 
 export interface Message {
@@ -103,6 +119,7 @@ export interface CreateSessionRequest {
   experience_level: string;
   key_skills: string[];
   interview_language: string;
+  position_id?: string | null;
 }
 
 export interface CreateSessionResponse extends SessionResponse {
@@ -119,6 +136,7 @@ export interface SessionResponse {
   status: string;
   current_question_index: number;
   total_questions: number;
+  position_id: string | null;
   started_at: string;
   completed_at: string | null;
 }
@@ -222,6 +240,40 @@ export interface ConversationEntry {
   timestamp: string;
 }
 
+// ── P2: Phase & Follow-up Payloads ─────────────────────────
+
+export interface PhaseChangePayload {
+  from_phase: string;
+  to_phase: string;
+  phase_index: number;
+  total_phases: number;
+  phase_description: string;
+  position_context: string;
+}
+
+export interface FollowUpPayload {
+  question_id: string;
+  parent_question_id: string;
+  content: string;
+  category: string;
+  difficulty: string;
+  depth: number;
+  question_number: number;
+  total_questions: number;
+}
+
+export interface PositionContextPayload {
+  position_title: string;
+  focus_areas: string[];
+  phase_relevance: string;
+}
+
+export interface StrategyReadyPayload {
+  strategy_summary: string;
+  phases_count: number;
+  phase_names: string[];
+}
+
 export interface InterviewTemplate {
   id: string;
   name: string;
@@ -231,4 +283,51 @@ export interface InterviewTemplate {
   key_skills: string[];
   total_questions: number;
   categories: string[];
+}
+
+// ── Job Position Types ──────────────────────────────────────
+
+export interface SkillRequirement {
+  skill: string;
+  min_years: number;
+  level: string;
+}
+
+export interface JobPosition {
+  id: string;
+  title: string;
+  department: string;
+  level: string;
+  status: string;
+  description: string | null;
+  responsibilities: string[];
+  required_skills: SkillRequirement[];
+  preferred_skills: SkillRequirement[];
+  soft_skill_requirements: Record<string, string>;
+  domain_knowledge: string[] | null;
+  default_total_questions: number;
+  default_duration_minutes: number;
+  interview_focus_areas: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobPositionListItem {
+  id: string;
+  title: string;
+  department: string;
+  level: string;
+  status: string;
+  default_total_questions: number;
+  default_duration_minutes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobPositionListResponse {
+  items: JobPositionListItem[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 }

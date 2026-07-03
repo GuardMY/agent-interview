@@ -23,7 +23,9 @@ async def verify_admin_token(
     )
     session = result.scalar_one_or_none()
 
-    if not session or session.admin_token != x_admin_token:
+    if not session:
+        raise HTTPException(404, "Session not found")
+    if session.admin_token != x_admin_token:
         raise HTTPException(403, "Forbidden")
 
     return session
@@ -43,7 +45,9 @@ async def verify_candidate_token(
     )
     session = result.scalar_one_or_none()
 
-    if not session or session.candidate_token != token:
+    if not session:
+        raise HTTPException(404, "Session not found")
+    if session.candidate_token != token:
         raise HTTPException(403, "Forbidden")
 
     return session
@@ -54,14 +58,11 @@ async def verify_master_admin(
 ) -> bool:
     """Verify the master admin token (global, not session-scoped).
 
-    Requires settings.master_admin_token to be configured.
-    Returns True if authorized, raises 403 otherwise.
+    When master_admin_token is not configured, authentication is skipped
+    (the frontend is management-only and does not require auth).
     """
     if not settings.master_admin_token:
-        raise HTTPException(
-            status_code=403,
-            detail="Master admin token not configured on server",
-        )
+        return True
     if not x_admin_token or x_admin_token != settings.master_admin_token:
         raise HTTPException(403, "Forbidden")
     return True

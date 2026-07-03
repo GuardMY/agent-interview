@@ -21,6 +21,7 @@ class Question(Base):
     difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
     expected_keywords: Mapped[dict] = mapped_column(JSON, default=list)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    phase: Mapped[str | None] = mapped_column(String(30), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pending")
     asked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

@@ -6,17 +6,13 @@ import { SessionCreateDialog } from "@/components/dashboard/SessionCreateDialog"
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { createSession, listSessions, deleteSession, getSession } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { createSession, listSessions, deleteSession } from "@/lib/api";
 import { useSessionNotifications } from "@/hooks/use-notification";
 import { useI18n } from "@/i18n";
+import { Briefcase } from "lucide-react";
+import Link from "next/link";
 import type { SessionListStats, SessionResponse } from "@/types";
-
-const MASTER_TOKEN_KEY = "master_admin_token";
-
-function getMasterToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(MASTER_TOKEN_KEY);
-}
 
 export default function DashboardPage() {
   const { t, locale } = useI18n();
@@ -34,60 +30,24 @@ export default function DashboardPage() {
 
   const loadSessions = useCallback(async () => {
     setFetching(true);
-    const masterToken = getMasterToken();
-
-    if (masterToken) {
-      // Use the server-side list API with aggregate stats
-      try {
-        const response = await listSessions(masterToken, { page: 1, size: 100 });
-        setSessions(response.items);
-        setStats(response.stats);
-        setFetching(false);
-        return;
-      } catch {
-        // Fall through to localStorage fallback
-      }
-    }
-
-    // Fallback: localStorage N+1 pattern (no master token configured)
-    const stored = localStorage.getItem("session_ids");
-    if (!stored) {
+    setError(null);
+    try {
+      const response = await listSessions({ page: 1, size: 100 });
+      setSessions(response.items);
+      setStats(response.stats);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t.dashboard.failLoad);
+    } finally {
       setFetching(false);
-      return;
     }
-    const ids: string[] = JSON.parse(stored);
-    const results: SessionResponse[] = [];
-    for (const id of ids) {
-      try {
-        const token = localStorage.getItem(`candidate_${id}`);
-        if (!token) continue;
-        const s = await getSession(id, token);
-        results.push(s);
-      } catch {
-        // Session may have been deleted
-      }
-    }
-    results.sort(
-      (a, b) =>
-        new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
-    );
-    setSessions(results);
-    setStats({
-      total_count: results.length,
-      active_count: results.filter(s => s.status !== "done" && s.status !== "idle").length,
-      completed_count: results.filter(s => s.status === "done").length,
-      avg_score: null,
-      status_breakdown: {},
-    });
-    setFetching(false);
-  }, []);
+  }, [t.dashboard.failLoad]);
 
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
 
   // Polling notifications for completed interviews
-  useSessionNotifications(getMasterToken(), locale);
+  useSessionNotifications(locale);
 
   const handleCreate = async (data: {
     candidate_name: string;
@@ -100,20 +60,18 @@ export default function DashboardPage() {
     setError(null);
     try {
       const session = await createSession(data);
-      // Store tokens for later access
+      // Store tokens for session-specific access (interviews & reports)
       localStorage.setItem(`admin_${session.id}`, session.admin_token);
       localStorage.setItem(`candidate_${session.id}`, session.candidate_token);
-      const stored = localStorage.getItem("session_ids");
-      const ids: string[] = stored ? JSON.parse(stored) : [];
-      ids.unshift(session.id);
-      localStorage.setItem("session_ids", JSON.stringify(ids));
       setSessions((prev) => [session, ...prev]);
       window.open(
         `/interview/${session.id}?token=${encodeURIComponent(session.candidate_token)}`,
         "_blank"
       );
+      return { id: session.id, admin_token: session.admin_token, candidate_token: session.candidate_token };
     } catch (e) {
       setError(e instanceof Error ? e.message : t.dashboard.failCreate);
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -127,15 +85,8 @@ export default function DashboardPage() {
       setSessions((prev) => prev.filter((s) => s.id !== id));
       localStorage.removeItem(`admin_${id}`);
       localStorage.removeItem(`candidate_${id}`);
-      const stored = localStorage.getItem("session_ids");
-      if (stored) {
-        const ids: string[] = JSON.parse(stored).filter(
-          (sid: string) => sid !== id
-        );
-        localStorage.setItem("session_ids", JSON.stringify(ids));
-      }
     } catch (e) {
-      console.error("Delete failed:", e);
+      setError(e instanceof Error ? e.message : t.dashboard.failDelete);
     }
   };
 
@@ -151,6 +102,12 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500">{t.dashboard.subtitle}</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/dashboard/positions">
+              <Button variant="outline" size="sm">
+                <Briefcase className="mr-2 h-4 w-4" />
+                Positions
+              </Button>
+            </Link>
             <ThemeToggle />
             <LanguageSwitcher />
             <SessionCreateDialog onCreate={handleCreate} loading={loading} />

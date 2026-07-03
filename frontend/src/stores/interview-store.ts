@@ -8,6 +8,16 @@ import type {
   QuestionMeta,
 } from "@/types";
 
+interface PhaseInfo {
+  name: string;
+  label: string;
+  description: string;
+  questionCount: number;
+  maxQuestions: number;
+  isActive: boolean;
+  isCompleted: boolean;
+}
+
 interface InterviewState {
   // ── Session ──
   sessionId: string | null;
@@ -29,6 +39,14 @@ interface InterviewState {
   evaluationFeedback: string | null;
   isWaitingForResponse: boolean; // when AI is "typing"
 
+  // ── P2: Phase tracking ──
+  phases: PhaseInfo[];
+  currentPhaseIndex: number;
+  totalPhases: number;
+  positionContext: string | null;
+  followUpDepth: number;
+  parentQuestionId: string | null;
+
   // ── Actions ──
   setSession: (
     sessionId: string,
@@ -45,6 +63,15 @@ interface InterviewState {
   setQuestionIndex: (idx: number) => void;
   incrementQuestionIndex: () => void;
   reset: () => void;
+
+  // ── P2: Phase actions ──
+  setPhases: (phases: PhaseInfo[]) => void;
+  setCurrentPhaseIndex: (idx: number) => void;
+  setTotalPhases: (total: number) => void;
+  setPhaseQuestionCount: (phaseName: string, count: number) => void;
+  markPhaseCompleted: (phaseName: string) => void;
+  setPositionContext: (context: string | null) => void;
+  setFollowUpInfo: (depth: number, parentId: string | null) => void;
 }
 
 const initialState = {
@@ -60,6 +87,13 @@ const initialState = {
   currentQuestionMeta: null,
   evaluationFeedback: null,
   isWaitingForResponse: false,
+  // P2 defaults
+  phases: [] as PhaseInfo[],
+  currentPhaseIndex: 0,
+  totalPhases: 0,
+  positionContext: null,
+  followUpDepth: 0,
+  parentQuestionId: null,
 };
 
 export const useInterviewStore = create<InterviewState>((set) => ({
@@ -101,4 +135,26 @@ export const useInterviewStore = create<InterviewState>((set) => ({
     })),
 
   reset: () => set(initialState),
+
+  // ── P2: Phase actions ──
+  setPhases: (phases) => set({ phases }),
+  setCurrentPhaseIndex: (idx) => set({ currentPhaseIndex: idx }),
+  setTotalPhases: (total) => set({ totalPhases: total }),
+  setPhaseQuestionCount: (phaseName, count) =>
+    set((state) => ({
+      phases: state.phases.map((p) =>
+        p.name === phaseName ? { ...p, questionCount: count } : p
+      ),
+    })),
+  markPhaseCompleted: (phaseName) =>
+    set((state) => ({
+      phases: state.phases.map((p) =>
+        p.name === phaseName
+          ? { ...p, isActive: false, isCompleted: true }
+          : p
+      ),
+    })),
+  setPositionContext: (context) => set({ positionContext: context }),
+  setFollowUpInfo: (depth, parentId) =>
+    set({ followUpDepth: depth, parentQuestionId: parentId }),
 }));

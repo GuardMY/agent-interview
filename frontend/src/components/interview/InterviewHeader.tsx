@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useInterviewStore } from "@/stores/interview-store";
 import { useI18n } from "@/i18n";
 import { ConnectionBadge } from "./ConnectionBadge";
+import { PhaseProgressBar } from "./PhaseProgressBar";
 
 export function InterviewHeader() {
   const { t } = useI18n();
@@ -12,6 +13,8 @@ export function InterviewHeader() {
   const totalQuestions = useInterviewStore((s) => s.totalQuestions);
   const interviewStatus = useInterviewStore((s) => s.interviewStatus);
   const connectionState = useInterviewStore((s) => s.connectionState);
+  const phases = useInterviewStore((s) => s.phases);
+  const hasPhases = phases.length > 0;
 
   const [elapsed, setElapsed] = useState(0);
 
@@ -48,17 +51,21 @@ export function InterviewHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden w-32 items-center gap-2 sm:flex">
-            <div className="h-1.5 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-1.5 rounded-full bg-blue-600 transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
+          {hasPhases ? (
+            <PhaseProgressBar />
+          ) : (
+            <div className="hidden w-32 items-center gap-2 sm:flex">
+              <div className="h-1.5 flex-1 rounded-full bg-gray-200">
+                <div
+                  className="h-1.5 rounded-full bg-blue-600 transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <span className="text-xs tabular-nums text-gray-500">
+                {questionIndex}/{totalQuestions}
+              </span>
             </div>
-            <span className="text-xs tabular-nums text-gray-500">
-              {questionIndex}/{totalQuestions}
-            </span>
-          </div>
+          )}
 
           <span className="text-sm tabular-nums text-gray-600">{timeStr}</span>
 

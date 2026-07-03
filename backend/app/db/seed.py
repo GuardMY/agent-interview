@@ -1,7 +1,8 @@
-"""Seed the question_bank table from JSON data on first run.
+"""Seed the question_bank and job_positions tables from JSON data on first run.
 
 Loads from questions_en.json (question_text) and questions_zh.json (question_zh),
 merging by position to produce bilingual DB entries.
+Also seeds job positions from job_positions.json.
 """
 
 import json
@@ -12,6 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.question_bank import QuestionBank
+from app.models.job_position import JobPosition
 
 logger = logging.getLogger(__name__)
 
@@ -20,16 +22,22 @@ _QUESTIONS_EN = _DATA_DIR / "questions_en.json"
 _QUESTIONS_ZH = _DATA_DIR / "questions_zh.json"
 # Legacy fallback
 _QUESTIONS_JSON = _DATA_DIR / "questions.json"
+_JOB_POSITIONS = _DATA_DIR / "job_positions.json"
 
 
 def _load_json(path: Path) -> list[dict]:
-    """Load question items from a JSON file. Returns empty list if missing."""
+    """Load items from a JSON file. Returns empty list if missing."""
     if not path.exists():
-        logger.warning(f"Question file not found: {path}")
+        logger.warning(f"Data file not found: {path}")
         return []
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    return data.get("questions", [])
+    # Support both {"questions": [...]} and {"positions": [...]} wrappers
+    if "questions" in data:
+        return data.get("questions", [])
+    if "positions" in data:
+        return data.get("positions", [])
+    return []
 
 
 async def seed_question_bank(db: AsyncSession) -> None:
@@ -81,3 +89,41 @@ async def seed_question_bank(db: AsyncSession) -> None:
             f"Seeded question bank with {len(seeded)} questions "
             f"({zh_count} with Chinese translations)."
         )
+
+
+async def seed_job_positions(db: AsyncSession) -> None:
+    """Seed job_positions from JSON file if the table is empty."""
+    result = await db.execute(select(func.count(JobPosition.id)))
+    count = result.scalar()
+    if count and count > 0:
+        logger.info(f"Job positions already has {count} entries, skipping seed.")
+        return
+
+    positions_data = _load_json(_JOB_POSITIONS)
+    if not positions_data:
+        logger.warning("No job_positions.json found, skipping seed.")
+        return
+
+    seeded = []
+    for item in positions_data:
+        seeded.append(
+            JobPosition(
+                title=item["title"],
+                department=item.get("department", ""),
+                level=item.get("level", "mid"),
+                description=item.get("description"),
+                responsibilities=item.get("responsibilities", []),
+                required_skills=item.get("required_skills", []),
+                preferred_skills=item.get("preferred_skills", []),
+                soft_skill_requirements=item.get("soft_skill_requirements", {}),
+                domain_knowledge=item.get("domain_knowledge"),
+                default_total_questions=item.get("default_total_questions", 8),
+                default_duration_minutes=item.get("default_duration_minutes", 45),
+                interview_focus_areas=item.get("interview_focus_areas", []),
+            )
+        )
+
+    if seeded:
+        db.add_all(seeded)
+        await db.commit()
+        logger.info(f"Seeded job positions with {len(seeded)} entries.")

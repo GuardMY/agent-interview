@@ -19,7 +19,14 @@ openai>=1.0.0
 # Config
 pydantic-settings>=2.6.0
 
+# Form data (file uploads)
+python-multipart>=0.0.18
+
 # Testing
 pytest>=8.3.0
 pytest-asyncio>=0.24.0
 httpx>=0.28.0
+
+# Resume Parsing
+python-docx>=1.1.2
+PyPDF2>=3.0.0
