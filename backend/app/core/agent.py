@@ -994,7 +994,26 @@ class InterviewAgent:
             expected_keywords=question.expected_keywords or [],
         )
 
-        evaluation = await self._evaluator.evaluate(q_data, answer_text, language=self._lang)
+        # Build evaluation context for strategy mode
+        kwargs: dict = {}
+        if self._mode == "strategy" and self._strategy:
+            kwargs["weights"] = self._strategy.scoring_weights
+            if self._phase_router:
+                kwargs["phase"] = self._phase_router.current_phase.phase_name
+            kwargs["position_context"] = self._strategy.position_summary
+
+        evaluation = await self._evaluator.evaluate(
+            q_data, answer_text, language=self._lang, **kwargs,
+        )
+
+        # Determine position requirement context for this question
+        relates_to_position = None
+        if self._mode == "strategy" and self._strategy:
+            # Look up relevant position requirement from tech focus areas
+            for area in (self._strategy.tech_focus_areas or []):
+                if area.topic.lower() in question.question_text.lower():
+                    relates_to_position = area.topic
+                    break
 
         answer = Answer(
             question_id=question.id,
@@ -1018,6 +1037,42 @@ class InterviewAgent:
             dimension_problem_solving=(
                 evaluation.dimensions.problem_solving if evaluation.dimensions else None
             ),
+            # P3: Behavioral dimensions
+            dimension_teamwork=(
+                evaluation.behavioral.teamwork if evaluation.behavioral else None
+            ),
+            dimension_leadership=(
+                evaluation.behavioral.leadership if evaluation.behavioral else None
+            ),
+            dimension_ownership=(
+                evaluation.behavioral.ownership if evaluation.behavioral else None
+            ),
+            dimension_growth_mindset=(
+                evaluation.behavioral.growth_mindset if evaluation.behavioral else None
+            ),
+            dimension_culture_fit=(
+                evaluation.behavioral.culture_fit if evaluation.behavioral else None
+            ),
+            # P3: Position match dimensions
+            dimension_skill_coverage=(
+                evaluation.position_match.skill_coverage if evaluation.position_match else None
+            ),
+            dimension_experience_alignment=(
+                evaluation.position_match.experience_alignment if evaluation.position_match else None
+            ),
+            dimension_level_alignment=(
+                evaluation.position_match.level_alignment if evaluation.position_match else None
+            ),
+            dimension_domain_fit=(
+                evaluation.position_match.domain_fit if evaluation.position_match else None
+            ),
+            dimension_growth_potential=(
+                evaluation.position_match.growth_potential if evaluation.position_match else None
+            ),
+            # P3: Follow-up tracking
+            question_chain_depth=self._follow_up_depth,
+            is_follow_up=self._follow_up_depth > 0,
+            relates_to_position_requirement=relates_to_position,
             llm_evaluation_raw={
                 "score": evaluation.score,
                 "comment": evaluation.comment,

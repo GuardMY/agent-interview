@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getCandidateReport } from "@/lib/api";
 import { useI18n } from "@/i18n";
 import type { SessionReport } from "@/types";
+import { RadarChart } from "@/components/report/RadarChart";
 
 function ResultContent({ sessionId }: { sessionId: string }) {
   const searchParams = useSearchParams();
@@ -99,6 +100,21 @@ function ResultContent({ sessionId }: { sessionId: string }) {
             </div>
           </div>
         </div>
+
+        {/* P3: Position Match Radar */}
+        {report.position_match_summary && Object.keys(report.position_match_summary).length >= 3 && (
+          <div className="mb-6 rounded-lg border bg-white p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-center">{t.report.radarTitle}</h3>
+            <RadarChart
+              data={Object.entries(report.position_match_summary).map(([key, val]) => ({
+                label: (t.dimensions as Record<string, string>)[key] || key,
+                value: val,
+              }))}
+              maxValue={5}
+              size={180}
+            />
+          </div>
+        )}
 
         {/* Per-question summary */}
         <h2 className="mb-3 text-lg font-semibold text-gray-800">

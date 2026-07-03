@@ -12,7 +12,7 @@
 | Phase 0 | v2.0.0 | ✅ 已完成 | 2026-07-02 | 2026-07-03 | 岗位管理系统 + 会话绑定 |
 | Phase 1 | v2.1.0 | ✅ 已完成 | 2026-07-03 | 2026-07-03 | 简历解析 + 差距分析 + 策略生成 |
 | Phase 2 | v2.2.0 | ✅ 已完成 | 2026-07-03 | 2026-07-03 | 新 FSM + 阶段拆分 + 岗位感知 |
-| Phase 3 | — | ⬜ 未开始 | — | — | 分级评分 + 岗位匹配度 |
+| Phase 3 | v2.3.0 | ✅ 已完成 | 2026-07-03 | 2026-07-03 | 分级评分 + 岗位匹配度 |
 | Phase 4 | — | ⬜ 未开始 | — | — | 行为面试 + 文化匹配 |
 | Phase 5 | — | ⬜ 未开始 | — | — | 完善 + 测试 + 迁移 |
 
@@ -123,17 +123,33 @@
 
 ## Phase 3 — 分级评分 + 岗位匹配度
 
-**版本**：— &nbsp;｜ &nbsp;**状态**：⬜ 未开始
+**版本**：v2.3.0 &nbsp;｜ &nbsp;**状态**：✅ 已完成
 
-### 计划任务
+### 完成清单
 
-- [ ] 分级权重配置（L1/L2/L3，含 position_match 维度）
-- [ ] BehavioralDimensions + PositionMatchDimensions schema
-- [ ] EvaluationEngine 重构：支持分级权重 + 岗位匹配维度
-- [ ] position_match_scoring Prompt（6 个子维度）
-- [ ] 分阶段评分汇总
-- [ ] 报告增强：岗位匹配雷达图数据 + 分阶段得分 + Gap 总结
-- [ ] 前端报告页：雷达图组件 + 分阶段展示
+- [x] BehavioralDimensions + PositionMatchDimensions schema（`evaluation.py`）
+- [x] Answer 模型扩展：10 个新维度列（behavioral 5 + position_match 5）+ 追问标记
+- [x] 评分 Prompt V2：阶段感知的评分提示（含 behavioral + position_match 维度）
+- [x] EvaluationEngine 重构：支持动态 `ScoringWeights` + 阶段感知评分
+- [x] Agent 评分调用更新：传入 weights/phase/position_context + 新维度持久化
+- [x] ReportService 增强：分阶段得分汇总 + 雷达图数据 + Gap 总结
+- [x] SessionReport 扩展：`phase_scores`, `position_match_summary`, `gap_summary`
+- [x] 前端 SVG 雷达图组件（`RadarChart.tsx`）：纯 SVG，无第三方依赖
+- [x] 前端报告页增强：岗位匹配雷达图 + 分阶段得分 + Gap 总结
+- [x] AnswerCard 增强：展示 behavioral 维度 + position_match 维度 + 岗位关联
+- [x] 候选人结果页增强：雷达图展示
+- [x] i18n 翻译补全：所有维度名称 + 报告增强文案（中英文）
+
+### 关联文件
+
+```
+后端：schemas/evaluation.py, models/answer.py, llm/prompts/scoring.py,
+     core/evaluator.py, core/agent.py, services/report.py
+前端：types/index.ts, components/report/RadarChart.tsx (新),
+     app/report/[sessionId]/page.tsx, components/report/AnswerCard.tsx,
+     app/interview/[sessionId]/result/page.tsx,
+     i18n/locales/{en,zh}.json
+```
 
 ### 依赖
 

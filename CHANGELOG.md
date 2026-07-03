@@ -7,6 +7,32 @@
 
 ---
 
+## [2.3.0] - 2026-07-03
+
+### Added
+- BehavioralDimensions + PositionMatchDimensions schema（`evaluation.py`）：5 个行为子维度 + 5 个岗位匹配子维度
+- Answer 模型扩展：10 个新维度列 + `question_chain_depth` / `is_follow_up` / `relates_to_position_requirement`
+- 评分 Prompt V2：阶段感知的评分提示（按阶段注入不同评估维度）
+- 动态评分权重：EvaluationEngine 从 InterviewStrategy.scoring_weights 读取 L1/L2/L3 分级权重
+- SessionReport 扩展：`phase_scores`（分阶段得分）、`position_match_summary`（雷达图数据）、`gap_summary`（差距分析总结）
+- ReportService 增强：分阶段得分聚合 + 岗位匹配 5 维雷达图数据 + Gap 技能验证追踪
+- SVG 雷达图组件（`RadarChart.tsx`）：纯 SVG 实现，无第三方图表库依赖
+- 前端报告页增强：岗位匹配雷达图 + 分阶段得分进度条 + Gap 分析总结
+- AnswerCard 增强：行为维度展示 + 岗位匹配维度展示 + 岗位要求关联标记
+- 候选人结果页增强：岗位匹配雷达图
+- i18n：14 个维度名称 + 8 个报告增强文案（中英文）
+
+### Changed
+- EvaluationEngine.evaluate() 签名扩展：新增可选 `weights`, `phase`, `position_context` 参数
+- `_compute_weighted_score()` 改为动态权重：从 ScoringWeights 读取权重，自动包含 behavioral + position_match 维度
+- Agent._evaluate_and_continue() 传入策略上下文：weights + phase + position_context
+- ReportService 维度聚合扩展到全部 14 个维度字段
+
+### Fixed
+- EvaluationEngine 不再忽略 StrategyGeneratorService 生成的 grading weights
+
+---
+
 ## [2.2.0] - 2026-07-03
 
 ### Added

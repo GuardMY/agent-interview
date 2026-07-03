@@ -75,6 +75,22 @@
     "viewResults": "查看面试结果",
     "loading": "加载中..."
   },
+  "dimensions": {
+    "technical_accuracy": "技术准确性",
+    "depth_of_knowledge": "知识深度",
+    "communication": "沟通表达",
+    "problem_solving": "问题解决",
+    "teamwork": "团队协作",
+    "leadership": "领导力",
+    "ownership": "责任心",
+    "growth_mindset": "成长心态",
+    "culture_fit": "文化匹配",
+    "skill_coverage": "技能覆盖度",
+    "experience_alignment": "经验匹配度",
+    "level_alignment": "级别匹配度",
+    "domain_fit": "领域匹配度",
+    "growth_potential": "成长潜力"
+  },
   "report": {
     "title": "面试报告",
     "averageScore": "平均得分",
@@ -95,7 +111,19 @@
     "exporting": "导出中...",
     "conversationTranscript": "对话记录",
     "roleInterviewer": "面试官",
-    "roleCandidate": "候选人"
+    "roleCandidate": "候选人",
+    "radarTitle": "岗位匹配雷达图",
+    "phaseScores": "分阶段得分",
+    "gapSummary": "差距分析",
+    "skillsCovered": "已覆盖技能",
+    "skillsMissing": "技能缺口",
+    "skillsVerified": "面试已验证",
+    "skillsUnverified": "仍未验证",
+    "experienceGap": "经验差距",
+    "levelDelta": "级别偏差",
+    "behavioralDimensions": "行为维度",
+    "positionMatch": "岗位匹配度",
+    "relatesTo": "关联岗位要求"
   },
   "result": {
     "title": "面试完成！",

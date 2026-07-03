@@ -146,6 +146,26 @@ export interface EvaluationDimensions {
   depth_of_knowledge: number;
   communication: number;
   problem_solving: number;
+  // P3: Extended dimensions
+  behavioral?: BehavioralDimensions | null;
+  position_match?: PositionMatchDimensions | null;
+}
+
+// P3: Behavioral & Position Match dimensions
+export interface BehavioralDimensions {
+  teamwork?: number | null;
+  leadership?: number | null;
+  ownership?: number | null;
+  growth_mindset?: number | null;
+  culture_fit?: number | null;
+}
+
+export interface PositionMatchDimensions {
+  skill_coverage?: number | null;
+  experience_alignment?: number | null;
+  level_alignment?: number | null;
+  domain_fit?: number | null;
+  growth_potential?: number | null;
 }
 
 export interface AnswerReport {
@@ -158,6 +178,11 @@ export interface AnswerReport {
   score: number | null;
   score_comment: string | null;
   dimensions?: EvaluationDimensions | null;
+  // P3: Extended fields
+  behavioral?: BehavioralDimensions | null;
+  position_match?: PositionMatchDimensions | null;
+  phase?: string | null;
+  relates_to_position_requirement?: string | null;
 }
 
 export interface SessionReport {
@@ -174,6 +199,10 @@ export interface SessionReport {
   completed_at: string | null;
   dimension_averages?: Record<string, number> | null;
   conversation_transcript?: ConversationEntry[] | null;
+  // P3: Enhanced report fields
+  phase_scores?: Record<string, number> | null;
+  position_match_summary?: Record<string, number> | null;
+  gap_summary?: Record<string, unknown> | null;
 }
 
 // ── Dashboard / Session List Types ────────────────────────────

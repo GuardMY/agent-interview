@@ -75,6 +75,22 @@
     "viewResults": "View Your Results",
     "loading": "Loading..."
   },
+  "dimensions": {
+    "technical_accuracy": "Technical Accuracy",
+    "depth_of_knowledge": "Depth of Knowledge",
+    "communication": "Communication",
+    "problem_solving": "Problem Solving",
+    "teamwork": "Teamwork",
+    "leadership": "Leadership",
+    "ownership": "Ownership",
+    "growth_mindset": "Growth Mindset",
+    "culture_fit": "Culture Fit",
+    "skill_coverage": "Skill Coverage",
+    "experience_alignment": "Experience Fit",
+    "level_alignment": "Level Alignment",
+    "domain_fit": "Domain Fit",
+    "growth_potential": "Growth Potential"
+  },
   "report": {
     "title": "Interview Report",
     "averageScore": "Average Score",
@@ -95,7 +111,19 @@
     "exporting": "Exporting...",
     "conversationTranscript": "Conversation Transcript",
     "roleInterviewer": "Interviewer",
-    "roleCandidate": "Candidate"
+    "roleCandidate": "Candidate",
+    "radarTitle": "Position Match Radar",
+    "phaseScores": "Phase Scores",
+    "gapSummary": "Gap Analysis",
+    "skillsCovered": "Skills Covered",
+    "skillsMissing": "Skills Missing",
+    "skillsVerified": "Verified in Interview",
+    "skillsUnverified": "Still Unverified",
+    "experienceGap": "Experience Gap",
+    "levelDelta": "Level Delta",
+    "behavioralDimensions": "Behavioral Dimensions",
+    "positionMatch": "Position Match",
+    "relatesTo": "Relates to"
   },
   "result": {
     "title": "Interview Complete!",

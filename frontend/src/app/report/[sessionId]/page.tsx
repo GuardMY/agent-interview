@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n";
 import type { SessionReport } from "@/types";
 import { ReportHeader } from "@/components/report/ReportHeader";
 import { AnswerCard } from "@/components/report/AnswerCard";
+import { RadarChart } from "@/components/report/RadarChart";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 
@@ -101,6 +102,94 @@ function ReportContent({ sessionId }: { sessionId: string }) {
         </div>
 
         <ReportHeader report={report} />
+
+        {/* P3: Radar chart + Phase scores + Gap summary */}
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Position Match Radar */}
+          {report.position_match_summary && Object.keys(report.position_match_summary).length >= 3 && (
+            <div className="rounded-lg border bg-card p-4">
+              <h3 className="mb-3 text-sm font-semibold">{t.report.radarTitle}</h3>
+              <RadarChart
+                data={Object.entries(report.position_match_summary).map(([key, val]) => ({
+                  label: (t.dimensions as Record<string, string>)[key] || key,
+                  value: val,
+                }))}
+                maxValue={5}
+                size={200}
+              />
+            </div>
+          )}
+
+          {/* Phase Scores */}
+          {report.phase_scores && Object.keys(report.phase_scores).length > 0 && (
+            <div className="rounded-lg border bg-card p-4">
+              <h3 className="mb-3 text-sm font-semibold">{t.report.phaseScores}</h3>
+              <div className="space-y-2">
+                {Object.entries(report.phase_scores).map(([phase, score]) => (
+                  <div key={phase} className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {(t.phases as Record<string, string>)[phase] || phase}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-24 rounded-full bg-gray-200">
+                        <div
+                          className="h-1.5 rounded-full bg-blue-600 transition-all"
+                          style={{ width: `${(score / 5) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold tabular-nums">{score}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Gap Summary */}
+        {report.gap_summary && (
+          <div className="mt-6 rounded-lg border bg-card p-4">
+            <h3 className="mb-3 text-sm font-semibold">{t.report.gapSummary}</h3>
+            <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+              {(report.gap_summary.skills_missing as string[])?.length > 0 && (
+                <div>
+                  <span className="font-medium text-red-600">{t.report.skillsMissing}:</span>
+                  <ul className="mt-1 list-inside list-disc text-muted-foreground">
+                    {(report.gap_summary.skills_missing as string[]).map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(report.gap_summary.skills_matched as string[])?.length > 0 && (
+                <div>
+                  <span className="font-medium text-green-600">{t.report.skillsCovered}:</span>
+                  <ul className="mt-1 list-inside list-disc text-muted-foreground">
+                    {(report.gap_summary.skills_matched as string[]).map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(report.gap_summary.verified_in_interview as string[])?.length > 0 && (
+                <div>
+                  <span className="font-medium text-blue-600">{t.report.skillsVerified}:</span>
+                  <ul className="mt-1 list-inside list-disc text-muted-foreground">
+                    {(report.gap_summary.verified_in_interview as string[]).map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {report.gap_summary.experience_gap && (
+                <div>
+                  <span className="font-medium">{t.report.experienceGap}:</span>
+                  <p className="text-muted-foreground">{String(report.gap_summary.experience_gap)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 space-y-4">
           <h2 className="text-sm font-semibold">
