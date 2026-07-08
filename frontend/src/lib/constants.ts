@@ -10,6 +10,12 @@ export const MAX_RECONNECT_ATTEMPTS = 3;
 export const RECONNECT_BASE_DELAY_MS = 1000;
 export const HEARTBEAT_INTERVAL_MS = 30_000;
 
+// Upload defaults
+export const MAX_RESUME_SIZE_MB = 5;
+export const MAX_RESUME_SIZE_BYTES = MAX_RESUME_SIZE_MB * 1024 * 1024;
+export const ALLOWED_RESUME_TYPES = [".pdf"];
+export const ALLOWED_RESUME_MIME = ["application/pdf"];
+
 // Status display labels
 export const STATUS_LABELS: Record<string, string> = {
   idle: "Ready",

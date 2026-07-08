@@ -5,6 +5,7 @@ export type MessageRole = "interviewer" | "candidate" | "system";
 export type InterviewStatus =
   | "idle"
   | "intro"
+  | "resume_deep_dive"
   | "qa_loop"
   | "wrapup"
   | "done";
@@ -101,6 +102,7 @@ export interface CreateSessionRequest {
   experience_level: string;
   key_skills: string[];
   interview_language: string;
+  resume_upload_id?: string;
 }
 
 export interface CreateSessionResponse extends SessionResponse {
@@ -144,4 +146,42 @@ export interface SessionReport {
   answers: AnswerReport[];
   started_at: string;
   completed_at: string | null;
+}
+
+// ── Resume Types ───────────────────────────────────────────
+
+export interface ResumeData {
+  name: string;
+  email: string;
+  phone: string;
+  summary: string;
+  skills: string[];
+  experience_years: string;
+  experience: Array<{
+    company: string;
+    title: string;
+    duration: string;
+    highlights: string[];
+  }>;
+  education: Array<{
+    school: string;
+    degree: string;
+    major: string;
+    year: string;
+  }>;
+  projects: Array<{
+    name: string;
+    description: string;
+    tech_stack: string[];
+  }>;
+  suggested_job_title: string;
+}
+
+export interface ResumeUploadResponse {
+  resume_id: string;
+  filename: string;
+  file_size_bytes: number;
+  parse_status: "pending" | "parsing" | "done" | "failed";
+  parsed_data: ResumeData | null;
+  created_at: string | null;
 }

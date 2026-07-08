@@ -18,6 +18,7 @@ class CreateSessionRequest(BaseModel):
     )
     key_skills: list[str] = Field(default_factory=list)
     interview_language: str = Field(default="en", pattern="^(en|zh)$")
+    resume_upload_id: str | None = Field(default=None)
 
     @field_validator("candidate_name", "job_title")
     @classmethod

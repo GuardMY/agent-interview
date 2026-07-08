@@ -1,14 +1,18 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.models.resume import Resume
 from app.models.session import InterviewSession
 from app.schemas.session import CreateSessionRequest, SessionResponse, CreateSessionResponse
 from app.schemas.evaluation import SessionReport
+from app.services.file_storage import FileStorage
 from app.services.report import ReportService
 from app.api.auth import verify_admin_token, verify_candidate_token
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +33,24 @@ async def create_session(
         interview_language=req.interview_language,
     )
     db.add(session)
+
+    # Associate resume if upload_id was provided
+    if req.resume_upload_id:
+        stmt = select(Resume).where(Resume.id == req.resume_upload_id)
+        result = await db.execute(stmt)
+        resume = result.scalar_one_or_none()
+        if resume is not None:
+            resume.session_id = session.id
+            # Move file from temp/ to session directory
+            try:
+                storage = FileStorage(settings.upload_dir)
+                new_path = storage.move_to_session(resume.file_path, session.id)
+                resume.file_path = new_path
+            except Exception as e:
+                logger.warning(f"Failed to move resume file: {e}")
+        else:
+            logger.warning(f"Resume {req.resume_upload_id} not found for session {session.id}")
+
     await db.commit()
     await db.refresh(session)
     logger.info(f"Session created: {session.id} for {session.candidate_name}")

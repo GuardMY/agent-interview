@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi import WebSocket
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.core.conversation import ConversationManager, IntentType
@@ -15,6 +16,7 @@ from app.llm.prompts.system import SystemPromptBuilder
 from app.llm.prompts.interviewer import get_prompt
 from app.models.answer import Answer
 from app.models.question import Question
+from app.models.resume import Resume
 from app.models.session import InterviewSession
 from app.schemas.message import WSMessage
 from app.schemas.question import QuestionData
@@ -46,6 +48,9 @@ class InterviewAgent:
         self._current_question_id: str | None = None
         self._skip_count: int = 0
         self._started_at: datetime | None = None
+        self._resume: Resume | None = None
+        self._resume_deep_dive_count: int = 0
+        self._max_resume_deep_dive: int = settings.max_resume_deep_dive_questions
 
     # ── Public API ──────────────────────────────────────────────
 
@@ -55,6 +60,9 @@ class InterviewAgent:
         if self._session is None:
             await self._send_error("Session not found")
             return
+
+        # Load associated resume if any
+        self._resume = await self._get_resume()
 
         self._fsm.transition(InterviewEvent.START)
         self._session.status = InterviewState.INTRO.value
@@ -69,6 +77,7 @@ class InterviewAgent:
             "job_title": self._session.job_title,
             "total_questions": self._session.total_questions,
             "duration_minutes": settings.default_time_limit_minutes,
+            "has_resume": self._resume is not None and self._resume.parse_status == "done",
         })
 
         # Generate and send intro message
@@ -82,6 +91,8 @@ class InterviewAgent:
 
         if state == InterviewState.INTRO:
             await self._handle_intro(raw)
+        elif state == InterviewState.RESUME_DEEP_DIVE:
+            await self._handle_resume_deep_dive(raw)
         elif state == InterviewState.QA_LOOP:
             await self._handle_qa(raw)
         elif state == InterviewState.WRAPUP:
@@ -98,20 +109,25 @@ class InterviewAgent:
     # ── Phase Handlers ──────────────────────────────────────────
 
     async def _handle_intro(self, raw: dict) -> None:
-        """After candidate responds to intro, transition to QA_LOOP."""
+        """After candidate responds to intro, branch to resume deep-dive or QA_LOOP."""
         content = raw.get("payload", {}).get("content", "")
         self._conversation.add_message("candidate", content)
 
-        self._fsm.transition(InterviewEvent.INTRO_COMPLETE)
-        if self._session:
-            self._session.status = InterviewState.QA_LOOP.value
-            await self._db.commit()
+        # Check if we have a parsed resume for deep-dive
+        if self._resume and self._resume.parse_status == "done":
+            await self._start_resume_deep_dive()
+        else:
+            # No resume: keep existing behavior, go straight to QA_LOOP
+            self._fsm.transition(InterviewEvent.INTRO_COMPLETE)
+            if self._session:
+                self._session.status = InterviewState.QA_LOOP.value
+                await self._db.commit()
 
-        # Transition acknowledgment + first question
-        await self._send_message("interview.chat", {
-            "content": get_prompt("intro_transition", self._lang)
-        })
-        await self._ask_next_question()
+            # Transition acknowledgment + first question
+            await self._send_message("interview.chat", {
+                "content": get_prompt("intro_transition", self._lang)
+            })
+            await self._ask_next_question()
 
     async def _handle_qa(self, raw: dict) -> None:
         """Handle a message in the Q&A loop phase."""
@@ -180,6 +196,94 @@ class InterviewAgent:
 
         self._fsm.transition(InterviewEvent.WRAPUP_COMPLETE)
         await self._finalize_session()
+
+    # ── Resume Deep-Dive ────────────────────────────────────────
+
+    async def _start_resume_deep_dive(self) -> None:
+        """Enter the resume deep-dive phase."""
+        self._fsm.transition(InterviewEvent.RESUME_DIVE)
+        if self._session:
+            self._session.status = InterviewState.RESUME_DEEP_DIVE.value
+            await self._db.commit()
+
+        self._resume_deep_dive_count = 0
+
+        # Phase announcement
+        await self._send_message("interview.chat", {
+            "content": get_prompt("resume_deep_dive_intro", self._lang)
+        })
+
+        # Ask first resume question
+        await self._ask_resume_question()
+
+    async def _handle_resume_deep_dive(self, raw: dict) -> None:
+        """Handle a message during the resume deep-dive phase."""
+        content = raw.get("payload", {}).get("content", "")
+        if not content:
+            return
+
+        self._conversation.add_message("candidate", content)
+        self._resume_deep_dive_count += 1
+
+        if self._resume_deep_dive_count >= self._max_resume_deep_dive:
+            # Done — move to QA_LOOP
+            self._fsm.transition(InterviewEvent.DEEP_DIVE_COMPLETE)
+            if self._session:
+                self._session.status = InterviewState.QA_LOOP.value
+                await self._db.commit()
+
+            await self._send_message("interview.chat", {
+                "content": get_prompt("resume_deep_dive_done", self._lang)
+            })
+            await self._ask_next_question()
+        else:
+            # Ask another resume question
+            await self._ask_resume_question()
+
+    async def _ask_resume_question(self) -> None:
+        """Generate and send a question based on resume content."""
+        if not self._resume:
+            return
+
+        # Build a concise resume summary for the LLM
+        resume_parts = []
+        if self._resume.parsed_name:
+            resume_parts.append(f"Name: {self._resume.parsed_name}")
+        if self._resume.suggested_job_title:
+            resume_parts.append(f"Current/Most Recent Role: {self._resume.suggested_job_title}")
+        if self._resume.parsed_skills:
+            resume_parts.append(f"Skills: {', '.join(self._resume.parsed_skills[:10])}")
+        if self._resume.parsed_summary:
+            resume_parts.append(f"Summary: {self._resume.parsed_summary}")
+        if self._resume.parsed_experience:
+            exp_lines = []
+            for exp in self._resume.parsed_experience[:3]:
+                company = exp.get("company", "")
+                title = exp.get("title", "")
+                duration = exp.get("duration", "")
+                exp_lines.append(f"  - {title} at {company} ({duration})")
+            if exp_lines:
+                resume_parts.append(f"Experience:\n" + "\n".join(exp_lines))
+        if self._resume.parsed_projects:
+            proj_lines = []
+            for proj in self._resume.parsed_projects[:2]:
+                name = proj.get("name", "")
+                desc = proj.get("description", "")
+                proj_lines.append(f"  - {name}: {desc}")
+            if proj_lines:
+                resume_parts.append(f"Projects:\n" + "\n".join(proj_lines))
+
+        resume_summary = "\n".join(resume_parts)
+
+        question = await self._llm.generate(
+            prompt=get_prompt("resume_deep_dive_question", self._lang,
+                              resume_summary=resume_summary),
+            system_prompt=self._build_system_prompt(),
+            max_tokens=300,
+            temperature=0.8,
+        )
+        self._conversation.add_message("interviewer", question)
+        await self._send_message("interview.chat", {"content": question})
 
     # ── Question Flow ───────────────────────────────────────────
 
@@ -390,9 +494,17 @@ class InterviewAgent:
     # ── Helpers ─────────────────────────────────────────────────
 
     async def _get_session(self) -> InterviewSession | None:
-        stmt = select(InterviewSession).where(
-            InterviewSession.id == self.session_id
+        stmt = (
+            select(InterviewSession)
+            .where(InterviewSession.id == self.session_id)
+            .options(selectinload(InterviewSession.resume))
         )
+        result = await self._db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def _get_resume(self) -> Resume | None:
+        """Load the resume associated with this session, if any."""
+        stmt = select(Resume).where(Resume.session_id == self.session_id)
         result = await self._db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -411,6 +523,27 @@ class InterviewAgent:
         elapsed = 0
         if self._started_at:
             elapsed = int((datetime.now(timezone.utc) - self._started_at).total_seconds() / 60)
+
+        # Build resume context string for system prompt
+        resume_context = ""
+        if self._resume and self._resume.parse_status == "done":
+            parts = []
+            if self._resume.parsed_name:
+                parts.append(f"Name: {self._resume.parsed_name}")
+            if self._resume.suggested_job_title:
+                parts.append(f"Current Role: {self._resume.suggested_job_title}")
+            if self._resume.parsed_skills:
+                parts.append(f"Skills: {', '.join(self._resume.parsed_skills[:10])}")
+            if self._resume.parsed_experience:
+                for exp in self._resume.parsed_experience[:3]:
+                    company = exp.get("company", "")
+                    title = exp.get("title", "")
+                    duration = exp.get("duration", "")
+                    parts.append(f"Experience: {title} at {company} ({duration})")
+            if self._resume.parsed_summary:
+                parts.append(f"Summary: {self._resume.parsed_summary}")
+            resume_context = "\n".join(parts)
+
         return SystemPromptBuilder.build(
             job_title=self._session.job_title,
             experience_level=self._session.experience_level,
@@ -421,6 +554,7 @@ class InterviewAgent:
             elapsed_minutes=elapsed,
             recent_history=self._conversation.format_window_for_llm(),
             language=self._lang,
+            resume_context=resume_context,
         )
 
     async def _generate_intro(self) -> str:

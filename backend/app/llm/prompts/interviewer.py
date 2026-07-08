@@ -6,6 +6,34 @@ Usage: get_prompt("key", lang) or get_prompt("key", lang, question="...")
 # ── All interview prompts keyed by purpose ───────────────────
 
 PROMPTS: dict[str, dict[str, str]] = {
+    # ── Resume deep-dive phase ───────────────────────────────
+    "resume_deep_dive_intro": {
+        "en": (
+            "I've reviewed your resume and I'd like to ask a few questions about your background "
+            "before we proceed to the technical questions."
+        ),
+        "zh": (
+            "我已经看过你的简历了，在进入技术问题之前，我想先和你聊聊你的背景和项目经历。"
+        ),
+    },
+    "resume_deep_dive_question": {
+        "en": (
+            "Based on the candidate's resume below, ask ONE natural, conversational follow-up "
+            "question about their background — a specific project, technology, or experience. "
+            "Be curious, not interrogative. Output only the question, no meta-commentary.\n\n"
+            "Resume:\n{resume_summary}"
+        ),
+        "zh": (
+            "根据以下候选人简历，针对他们的背景、具体项目、技术或经历提出一个自然的追问。"
+            "语气要好奇友好，不要像审讯。只输出问题，不要加任何前缀或说明。\n\n"
+            "简历：\n{resume_summary}"
+        ),
+    },
+    "resume_deep_dive_done": {
+        "en": "Thank you for sharing that background. Let's move on to the technical questions now.",
+        "zh": "感谢你分享这些经历，我们进入技术问答环节。",
+    },
+
     # ── Intro phase ──────────────────────────────────────────
     "intro_en": {
         "en": (

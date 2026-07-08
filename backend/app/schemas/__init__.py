@@ -2,6 +2,7 @@ from .session import CreateSessionRequest, SessionResponse, CreateSessionRespons
 from .question import QuestionData
 from .message import WSMessage, AnswerPayload, CommandPayload
 from .evaluation import EvaluationResult, AnswerReport, SessionReport
+from .resume import ResumeData, ResumeUploadResponse
 
 __all__ = [
     "CreateSessionRequest",
@@ -14,4 +15,6 @@ __all__ = [
     "EvaluationResult",
     "AnswerReport",
     "SessionReport",
+    "ResumeData",
+    "ResumeUploadResponse",
 ]

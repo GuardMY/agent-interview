@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/i18n";
 import { Plus } from "lucide-react";
+import { ResumeUploader } from "./ResumeUploader";
+import type { ResumeUploadResponse } from "@/types";
 
 interface Props {
   onCreate: (data: {
@@ -20,6 +22,7 @@ interface Props {
     experience_level: string;
     key_skills: string[];
     interview_language: string;
+    resume_upload_id?: string;
   }) => void;
   loading: boolean;
 }
@@ -38,6 +41,30 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
   const [level, setLevel] = useState("mid");
   const [language, setLanguage] = useState("en");
   const [skills, setSkills] = useState("");
+  const [resumeData, setResumeData] = useState<ResumeUploadResponse | null>(null);
+
+  const handleResumeParsed = useCallback(
+    (data: ResumeUploadResponse) => {
+      setResumeData(data);
+      // Auto-fill form from parsed resume
+      if (data.parsed_data) {
+        const p = data.parsed_data;
+        if (p.name) setName(p.name);
+        if (p.suggested_job_title) setJob(p.suggested_job_title);
+        if (p.experience_years && ["junior", "mid", "senior"].includes(p.experience_years)) {
+          setLevel(p.experience_years);
+        }
+        if (p.skills && p.skills.length > 0) {
+          setSkills(p.skills.join(", "));
+        }
+      }
+    },
+    []
+  );
+
+  const handleResumeClear = useCallback(() => {
+    setResumeData(null);
+  }, []);
 
   const handleSubmit = () => {
     if (!name.trim() || !job.trim()) return;
@@ -50,12 +77,14 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
         .map((s) => s.trim())
         .filter(Boolean),
       interview_language: language,
+      resume_upload_id: resumeData?.resume_id,
     });
     setName("");
     setJob("");
     setLevel("mid");
     setLanguage("en");
     setSkills("");
+    setResumeData(null);
     setOpen(false);
   };
 
@@ -74,6 +103,13 @@ export function SessionCreateDialog({ onCreate, loading }: Props) {
           <DialogTitle>{t.session.createTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
+          {/* Resume Upload */}
+          <ResumeUploader
+            onParsed={handleResumeParsed}
+            onClear={handleResumeClear}
+            parsed={resumeData}
+          />
+
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {t.session.candidateName}

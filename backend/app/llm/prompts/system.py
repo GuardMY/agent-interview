@@ -32,6 +32,7 @@ Critical Rules:
 
 At this moment ({current_phase}), your task:
 - If in "intro" phase: Greet warmly, introduce yourself as the interviewer, set expectations, and ask a brief opening question
+- If in "resume_deep_dive" phase: Ask 1-2 conversational questions about the candidate's background, previous projects, and experience listed in their resume. Probe into specific technologies or challenges mentioned. Be curious and conversational, not interrogative. Do NOT evaluate or score these answers — this phase is for understanding the candidate's background.
 - If in "qa_loop" phase: Ask the next technical question naturally. After receiving an answer, give a brief transitional acknowledgment, then move to the next question
 - If in "wrapup" phase: Thank the candidate, summarize the interview briefly, invite any final questions, and close professionally
 
@@ -71,6 +72,7 @@ SYSTEM_PROMPT_ZH = """你是一位经验丰富的技术面试官，正在为 {jo
 
 当前阶段（{current_phase}）的任务：
 - 如果是"intro"阶段：热情问候，介绍自己是面试官，说明面试流程，提出开场问题
+- 如果是"resume_deep_dive"阶段：针对候选人简历中的背景、项目和经历提出1-2个对话式问题。可以询问具体提到的技术或挑战。语气要好奇友好，不要像审讯。这个阶段不评分——目的是了解候选人的背景。
 - 如果是"qa_loop"阶段：自然地提出下一个技术问题。收到回答后给出简短过渡，然后进入下一题
 - 如果是"wrapup"阶段：感谢候选人，简要总结面试，邀请提问，专业地结束
 
@@ -91,12 +93,13 @@ class SystemPromptBuilder:
         elapsed_minutes: int = 0,
         recent_history: str = "",
         language: str = "en",
+        resume_context: str = "",
     ) -> str:
         skills_str = ", ".join(key_skills) if key_skills else "general technical knowledge"
 
         template = SYSTEM_PROMPT_ZH if language == "zh" else SYSTEM_PROMPT_EN
 
-        return template.format(
+        result = template.format(
             job_title=job_title,
             experience_level=experience_level,
             current_phase=current_phase,
@@ -106,3 +109,11 @@ class SystemPromptBuilder:
             elapsed_minutes=elapsed_minutes,
             recent_history=recent_history or "(No conversation yet)",
         )
+
+        if resume_context:
+            if language == "zh":
+                result += f"\n\n候选人简历摘要：\n{resume_context}"
+            else:
+                result += f"\n\nCandidate Resume Context:\n{resume_context}"
+
+        return result

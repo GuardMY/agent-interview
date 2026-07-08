@@ -4,6 +4,7 @@ import type {
   CreateSessionResponse,
   SessionResponse,
   SessionReport,
+  ResumeUploadResponse,
 } from "@/types";
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
@@ -66,4 +67,31 @@ export async function deleteSession(
 
 export async function healthCheck(): Promise<{ status: string; version: string }> {
   return request("/health");
+}
+
+// ── Resume ─────────────────────────────────────────────────
+
+export async function uploadResume(file: File): Promise<ResumeUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  // Bypass the request() helper — must NOT set Content-Type for multipart
+  const res = await fetch(`${API_BASE}/api/resumes/parse`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(detail.detail || `Upload failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getResume(
+  sessionId: string,
+  adminToken: string
+): Promise<ResumeUploadResponse> {
+  return request<ResumeUploadResponse>(
+    `/api/sessions/${sessionId}/resume`,
+    { headers: { "X-Admin-Token": adminToken } }
+  );
 }

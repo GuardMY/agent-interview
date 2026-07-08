@@ -83,8 +83,28 @@
   "status": {
     "idle": "Ready",
     "intro": "Opening",
+    "resume_deep_dive": "Resume Discussion",
     "qa_loop": "In Progress",
     "wrapup": "Closing",
     "done": "Completed"
+  },
+  "resume": {
+    "uploadTitle": "Upload Resume (Optional)",
+    "dropHint": "Drag & drop your resume PDF here, or click to browse",
+    "formatHint": "PDF format, max 5MB",
+    "uploading": "Uploading...",
+    "parsing": "AI is extracting your information...",
+    "parseSuccess": "Resume parsed successfully",
+    "parseFailed": "Failed to parse resume",
+    "retry": "Try again",
+    "previewTitle": "Parsed Information",
+    "confirmAndFill": "Confirm & auto-fill",
+    "parsedName": "Name",
+    "parsedSkills": "Skills",
+    "parsedExperience": "Experience",
+    "parsedEducation": "Education",
+    "parsedProjects": "Projects",
+    "suggestedJobTitle": "Suggested Job Title",
+    "clear": "Remove"
   }
 }

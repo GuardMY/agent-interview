@@ -50,3 +50,7 @@ class InterviewSession(Base):
         "Answer", back_populates="session",
         cascade="all, delete-orphan", passive_deletes=True,
     )
+    resume: Mapped["Resume | None"] = relationship(
+        "Resume", back_populates="session", uselist=False,
+        cascade="all, delete-orphan", passive_deletes=True,
+    )

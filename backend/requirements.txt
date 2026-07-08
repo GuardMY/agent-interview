@@ -19,6 +19,10 @@ openai>=1.0.0
 # Config
 pydantic-settings>=2.6.0
 
+# File upload & PDF parsing
+python-multipart>=0.0.12
+pypdf>=5.1.0
+
 # Testing
 pytest>=8.3.0
 pytest-asyncio>=0.24.0

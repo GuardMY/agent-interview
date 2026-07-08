@@ -45,5 +45,10 @@ class Settings(BaseSettings):
     scoring_consecutive_good: int = 2
     scoring_consecutive_poor: int = 2
 
+    # File upload
+    upload_dir: str = "uploads"
+    max_upload_size_mb: int = 5
+    max_resume_deep_dive_questions: int = 3
+
 
 settings = Settings()

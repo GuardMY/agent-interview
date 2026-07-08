@@ -83,8 +83,28 @@
   "status": {
     "idle": "就绪",
     "intro": "开场",
+    "resume_deep_dive": "简历讨论",
     "qa_loop": "面试中",
     "wrapup": "结束中",
     "done": "已完成"
+  },
+  "resume": {
+    "uploadTitle": "上传简历（可选）",
+    "dropHint": "拖拽 PDF 简历到此处，或点击选择文件",
+    "formatHint": "支持 PDF 格式，最大 5MB",
+    "uploading": "上传中...",
+    "parsing": "AI 解析中...",
+    "parseSuccess": "简历解析完成",
+    "parseFailed": "简历解析失败",
+    "retry": "重试",
+    "previewTitle": "解析预览",
+    "confirmAndFill": "确认并自动填充",
+    "parsedName": "姓名",
+    "parsedSkills": "技能",
+    "parsedExperience": "工作经验",
+    "parsedEducation": "教育背景",
+    "parsedProjects": "项目经历",
+    "suggestedJobTitle": "建议岗位",
+    "clear": "移除"
   }
 }

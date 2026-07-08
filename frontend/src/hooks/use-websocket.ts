@@ -91,6 +91,20 @@ export function useWebSocket(sessionId: string, token: string = "") {
           break;
         }
 
+        case "interview.chat": {
+          // Chat messages during resume_deep_dive phase — the phase is already set
+          // by the interview.start or previous question message
+          const p = payload as { content: string };
+          store.addMessage({
+            id: nextId(),
+            role: "interviewer",
+            content: p.content,
+            timestamp: ts,
+          });
+          store.setWaitingForResponse(false);
+          break;
+        }
+
         case "interview.evaluation": {
           const p = payload as { feedback: string };
           store.setEvaluationFeedback(p.feedback);

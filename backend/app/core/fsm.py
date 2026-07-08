@@ -4,6 +4,7 @@ from enum import Enum
 class InterviewState(str, Enum):
     IDLE = "idle"
     INTRO = "intro"
+    RESUME_DEEP_DIVE = "resume_deep_dive"
     QA_LOOP = "qa_loop"
     WRAPUP = "wrapup"
     DONE = "done"
@@ -12,6 +13,9 @@ class InterviewState(str, Enum):
 class InterviewEvent(str, Enum):
     START = "start"
     INTRO_COMPLETE = "intro_complete"
+    RESUME_DIVE = "resume_dive"
+    DEEP_DIVE_COMPLETE = "deep_dive_complete"
+    DEEP_DIVE_SKIP = "deep_dive_skip"
     ANSWER_EVALUATED = "answer_evaluated"
     QUESTION_EXHAUSTED = "question_exhausted"
     SKIP_QUESTION = "skip_question"
@@ -35,9 +39,16 @@ class InterviewFSM:
         (InterviewState.IDLE, InterviewEvent.ERROR): InterviewState.DONE,
 
         (InterviewState.INTRO, InterviewEvent.INTRO_COMPLETE): InterviewState.QA_LOOP,
+        (InterviewState.INTRO, InterviewEvent.RESUME_DIVE): InterviewState.RESUME_DEEP_DIVE,
         (InterviewState.INTRO, InterviewEvent.TIME_UP): InterviewState.QA_LOOP,
         (InterviewState.INTRO, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
         (InterviewState.INTRO, InterviewEvent.ERROR): InterviewState.DONE,
+
+        (InterviewState.RESUME_DEEP_DIVE, InterviewEvent.DEEP_DIVE_COMPLETE): InterviewState.QA_LOOP,
+        (InterviewState.RESUME_DEEP_DIVE, InterviewEvent.DEEP_DIVE_SKIP): InterviewState.QA_LOOP,
+        (InterviewState.RESUME_DEEP_DIVE, InterviewEvent.TIME_UP): InterviewState.QA_LOOP,
+        (InterviewState.RESUME_DEEP_DIVE, InterviewEvent.CANDIDATE_DISCONNECT): InterviewState.DONE,
+        (InterviewState.RESUME_DEEP_DIVE, InterviewEvent.ERROR): InterviewState.QA_LOOP,
 
         (InterviewState.QA_LOOP, InterviewEvent.ANSWER_EVALUATED): InterviewState.QA_LOOP,
         (InterviewState.QA_LOOP, InterviewEvent.SKIP_QUESTION): InterviewState.QA_LOOP,
