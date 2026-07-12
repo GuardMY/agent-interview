@@ -5,7 +5,7 @@ websockets>=13.0
 
 # Database
 sqlalchemy[asyncio]>=2.0.35
-asyncpg>=0.30.0
+asyncmy>=0.2.9
 aiosqlite>=0.20.0
 alembic>=1.14.0
 
