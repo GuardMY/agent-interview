@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     )
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///interview.db"
+    # MySQL 8.0 async URL. Set DATABASE_URL with the deployment credentials.
+    database_url: str = "mysql+asyncmy://:@localhost:3306/agent_interview"
     redis_url: str = "redis://localhost:6379/0"
 
     # LLM Provider: "anthropic" | "deepseek" | "openai"
